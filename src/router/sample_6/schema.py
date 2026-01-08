@@ -40,7 +40,7 @@ class Sample6StoryDetail(DefineSubset):
     def post_name(self):
         return 'story name: ' + self.name
 
-    tasks: list[Sample6TaskDetail] = []
+    tasks: list[Sample6TaskDetail] = Field(default_factory=list)
     def resolve_tasks(self, loader=Loader(tl.story_to_task_loader)):
         return loader.load(self.id)
     

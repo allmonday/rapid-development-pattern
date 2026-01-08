@@ -5,6 +5,7 @@ import src.services.user.loader as ul
 
 import src.services.user.schema as us
 import src.services.team.schema as tms
+
 class Sample2TeamDetail(tms.Team):
     senior_members: list[us.User] = []
     def resolve_senior_members(self, loader=Loader(ul.UserByLevelLoader)):

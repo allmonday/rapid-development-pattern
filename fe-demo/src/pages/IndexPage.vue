@@ -14,11 +14,11 @@
 import { Todo, Meta } from 'components/models';
 import ExampleComponent from 'components/ExampleComponent.vue';
 import { onMounted, ref } from 'vue';
-import {Sample1Service, Task} from 'src/client'
+import {Sample1, Task} from 'src/sdk'
 
 const tasks = ref<Task[]>([])
 onMounted(async()=> {
-  tasks.value = await Sample1Service.getTasks()
+  tasks.value = (await Sample1.getTasks()).data!
 })
 
 const todos = ref<Todo[]>([

@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { Sample1Service, Sample1SprintDetail, Sample1StoryDetail, Sample1TaskDetail, Sample1TeamDetail } from 'src/client'
+import {  Sample1, Sample1SprintDetail, Sample1StoryDetail, Sample1TaskDetail, Sample1TeamDetail } from 'src/sdk'
 import { onMounted, ref } from 'vue';
 
 const tasks = ref<Sample1TaskDetail[]>([])
@@ -29,10 +29,11 @@ const stories = ref<Sample1StoryDetail[]>([])
 const teams = ref<Sample1TeamDetail[]>([])
 
 onMounted(async () => {
-    tasks.value = await Sample1Service.getTasksWithDetail()
-    stories.value = await Sample1Service.getStoriesWithDetail()
-    sprints.value = await Sample1Service.getSprintsWithDetail()
-    teams.value = await Sample1Service.getTeamsWithDetail()
+    tasks.value = (await Sample1.getTasksWithDetail()).data!
+    tasks.value = (await Sample1.getTasksWithDetail()).data!
+    stories.value = (await Sample1.getStoriesWithDetail()).data!
+    sprints.value = (await Sample1.getSprintsWithDetail()).data!
+    teams.value = (await Sample1.getTeamsWithDetail()).data!
 })
 
 </script>

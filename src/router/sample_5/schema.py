@@ -1,5 +1,5 @@
 from typing import Optional, Annotated
-from pydantic_resolve import Loader, model_config, LoadBy
+from pydantic_resolve import Loader, LoadBy
 from pydantic import BaseModel
 import src.db as db
 
@@ -28,7 +28,6 @@ class Sample5SprintDetail(sps.Sprint):
     def post_task_count(self):
         return sum([s.task_count for s in self.stories])
 
-@model_config()
 class Sample5TeamDetail(tms.Team):
     sprints: Annotated[list[Sample5SprintDetail], LoadBy('id')] = []
 
@@ -41,7 +40,6 @@ class Sample5TeamDetail(tms.Team):
         self.description = f'team: "{self.name}" has {self.task_count} tasks in total.' 
 
     
-@model_config()
 class Sample5Root(BaseModel):
     summary: str
     team: Optional[Sample5TeamDetail] = None 

@@ -5,6 +5,11 @@ import {
   createWebHashHistory,
   createWebHistory,
 } from 'vue-router';
+import {client} from 'src/sdk/client.gen'
+
+client.setConfig({
+  baseUrl: '/',
+})
 
 import routes from './routes';
 

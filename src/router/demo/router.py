@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from pydantic import BaseModel
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import  Depends
@@ -7,19 +8,24 @@ import src.db as db
 
 import src.services.story.query as sq
 
-from .schema import Story
+from .schema import Story0
 from .schema1 import Story1
 from .schema2 import Story2
 from .schema3 import Story3
 
+class Payload(BaseModel):
+    message: str = '123'
+    name: str
+
 route = APIRouter(tags=['demo'], prefix="/demo")
 
-@route.get('/stories', response_model=List[Story])
-async def get_stories_with_detail():
+@route.post('/stories', response_model=List[Story0])
+async def get_stories_with_detail(payload: Payload):
+    print(payload)
     async with db.async_session() as session:
         stories = await sq.get_stories(session)
 
-    stories = [Story.model_validate(t) for t in stories]
+    stories = [Story0.model_validate(t) for t in stories]
     stories = await Resolver().resolve(stories)
     return stories
 

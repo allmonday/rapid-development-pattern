@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic_resolve import Loader, model_config, SubsetConfig, DefineSubset
+from pydantic_resolve import Loader, SubsetConfig, DefineSubset
 from typing import Dict
 
 import src.services.task.loader as tl

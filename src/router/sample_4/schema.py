@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import Optional, Annotated
-from pydantic_resolve import ICollector, LoadBy, model_config
+from pydantic_resolve import ICollector, LoadBy
 import src.services.story.schema as ss
 import src.services.task.schema as ts
 import src.services.user.schema as us
@@ -19,7 +19,6 @@ class CntCollector(ICollector):
     def values(self):
         return self.counter
 
-@model_config()
 class Sample4TeamDetail(tms.Team):
     sprints: Annotated[list[Sample4SprintDetail], LoadBy('id')] = []
 
@@ -35,7 +34,6 @@ class Sample4TeamDetail(tms.Team):
     def post_default_handler(self):
         self.description = f'team: "{self.name}" has {self.task_count} tasks in total.' 
 
-@model_config()
 class Sample4SprintDetail(sps.Sprint):
     stories: Annotated[list[Sample4StoryDetail], LoadBy('id')] = []
 
@@ -44,7 +42,6 @@ class Sample4SprintDetail(sps.Sprint):
     def post_task_count(self):
         return sum([s.task_count for s in self.stories])
 
-@model_config()
 class Sample4StoryDetail(ss.Story):
     __pydantic_resolve_collect__ = {'tasks': 'story_tasks'}
 
@@ -55,6 +52,5 @@ class Sample4StoryDetail(ss.Story):
     def post_task_count(self):
         return len(self.tasks)
 
-@model_config()
 class Sample4TaskDetail(ts.Task):
     user: Annotated[Optional[us.User], LoadBy('owner_id')] = None
