@@ -974,20 +974,20 @@ app.mount('/voyager', create_voyager(
 - 🎨 **颜色编码**：区分 resolve、post、expose 等操作
 - 📈 **依赖分析**：查看数据流向和依赖链
 
-#### 3. **自动推断类型**
+#### 3. **简化声明语法**
 
-使用 ERD 后，可以通过 `LoadBy` 自动推断关联数据的类型：
+使用 ERD 后，可以通过 `LoadBy` 简化关联数据的加载：
 
 ```python
 class TaskResponse(BaseModel):
-    # LoadBy 自动查找 ERD 中 owner_id 的关系定义
-    # 自动推断返回类型为 UserEntity
+    # LoadBy 自动查找 ERD 中 owner_id 的关系定义并调用对应的 loader
+    # 开发者仍然需要显式声明类型（与 ERD 中的 target_kls 保持一致）
     owner: Annotated[Optional[User], LoadBy('owner_id')] = None
 ```
 
 **优势：**
 - ✅ 无需手写 resolve 方法
-- ✅ 类型自动推断，IDE 提示更准确
+- ✅ 关系定义复用，避免重复编写 loader 调用
 - ✅ 代码更简洁
 
 #### 4. **强制数据关系建模**
@@ -1035,22 +1035,32 @@ class ItemEntity(BaseModel, BaseEntity):
 # - TaskResponse3.resolve_owner
 # ... 到处都是，容易遗漏
 
-# 使用 ERD：只修改一处
+# 使用 ERD：在实体层面统一管理关系
 class TaskEntity(BaseModel, BaseEntity):
+    # 添加新的关系
     __relationships__ = [
-        # 修改这里，所有视图自动更新
         Relationship(
             field='id',
-            target_kls=list[UserEntity],  # 从 1:1 改为 1:N
+            target_kls=list[UserEntity],  # 1:N 关系
             loader=task_to_assignees_loader
         )
     ]
+
+# 旧的视图在运行时会报错，提醒你修复
+class TaskResponse(BaseModel):
+    # 运行时错误：LoadBy('owner_id') 在 ERD 中找不到对应的关系
+    owner: Annotated[Optional[User], LoadBy('owner_id')] = None
+
+# 新的视图，需要显式声明类型
+class TaskResponse(BaseModel):
+    # 必须显式声明类型为 list[User]（与 ERD 中的 target_kls 对应）
+    assignees: Annotated[list[User], LoadBy('id')] = []
 ```
 
 **价值：**
-- ✅ **修改范围明确**：改一处，全局生效
-- ✅ **编译时检查**：类型错误会立即发现
-- ✅ **回归测试更容易**：影响范围可控
+- ✅ **修改范围明确**：关系定义集中在一处，影响范围清晰
+- ✅ **运行时检查**：使用不存在的关系会立即报错，不会静默失败
+- ✅ **回归测试更容易**：测试覆盖会让问题在开发阶段暴露
 
 ### GraphQL vs pydantic-resolve ERD
 
@@ -1059,8 +1069,8 @@ class TaskEntity(BaseModel, BaseEntity):
 | **关系定义位置** | 分散在每个 Resolver | 集中在实体定义 |
 | **关系复用** | 每次查询重新声明 | 一次定义，到处复用 |
 | **可视化** | 需要额外工具 | fastapi-voyager 自动生成 |
-| **类型推断** | 手动声明 | 自动推断 |
-| **重构安全** | 容易遗漏 | 编译时检查 |
+| **声明语法** | 手写 Resolver | LoadBy 简化声明 |
+| **重构安全** | 容易遗漏 | 集中管理 + 运行时检查 |
 | **业务建模** | 查询驱动 | 模型驱动 |
 
 ### 实际案例：团队管理系统的重构
@@ -1092,7 +1102,7 @@ const resolvers = {
 
 **使用 pydantic-resolve ERD：**
 ```python
-# 1. 修改实体关系（仅此一处）
+# 1. 修改实体关系
 class TaskEntity(BaseModel, BaseEntity):
     __relationships__ = [
         Relationship(
@@ -1102,15 +1112,21 @@ class TaskEntity(BaseModel, BaseEntity):
         )
     ]
 
-# 2. 更新视图（使用 LoadBy 的自动推断）
+# 2. 更新视图
+# 旧的视图在运行时会报错
 class TaskResponse(BaseModel):
-    # 类型自动推断为 list[User]
+    # 运行时错误：LoadBy('owner_id') 在 ERD 中找不到对应关系
+    owner: Annotated[Optional[User], LoadBy('owner_id')] = None
+
+# 新的视图，需要显式声明正确的类型
+class TaskResponse(BaseModel):
+    # 必须显式声明类型为 list[User]（与 ERD 中的 target_kls=list[UserEntity] 对应）
     assignees: Annotated[list[User], LoadBy('id')] = []
 
 # 3. 运行时检查
-# - 如果有视图还在用旧的关系，类型检查会报错
-# - IDE 会提示类型不匹配
-# - 重构安全且可控
+# - 如果有视图还在用旧的关系，运行时会立即报错
+# - 集中的关系定义让影响范围更清晰
+# - 配合测试可以确保重构的安全性和完整性
 ```
 
 ### ERD 的长期价值
@@ -1138,8 +1154,8 @@ ERD 是 pydantic-resolve 相对于 GraphQL 的**隐藏优势**：
 
 1. **集中管理**：关系定义一处，全局复用
 2. **可视化**：自动生成依赖关系图
-3. **类型安全**：自动推断，编译时检查
-4. **重构友好**：修改一处，全局生效
+3. **简化声明**：LoadBy 避免重复编写 resolve 方法
+4. **重构友好**：集中定义 + 运行时检查
 5. **业务建模**：强制在实体层面思考业务
 
 这使得 pydantic-resolve 不仅是一个**数据组装工具**，更是一个**业务建模框架**，为长期维护的项目提供了坚实的数据模型基础。

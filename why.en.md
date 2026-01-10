@@ -976,20 +976,20 @@ app.mount('/voyager', create_voyager(
 - 🎨 **Color coding**: Distinguish resolve, post, expose operations
 - 📈 **Dependency analysis**: View data flow and dependency chains
 
-#### 3. **Automatic Type Inference**
+#### 3. **Simplified Declaration Syntax**
 
-With ERD, `LoadBy` can automatically infer types of related data:
+With ERD, `LoadBy` simplifies loading related data:
 
 ```python
 class TaskResponse(BaseModel):
-    # LoadBy automatically finds owner_id relationship in ERD
-    # Automatically infers return type as UserEntity
+    # LoadBy automatically finds owner_id relationship in ERD and calls the corresponding loader
+    # Developer still needs to explicitly declare the type (should match target_kls in ERD)
     owner: Annotated[Optional[User], LoadBy('owner_id')] = None
 ```
 
 **Advantages:**
 - ✅ No need to write resolve methods manually
-- ✅ Automatic type inference, more accurate IDE hints
+- ✅ Relationship definition reuse, avoid repeating loader calls
 - ✅ Cleaner code
 
 #### 4. **Forces Data Relationship Modeling**
@@ -1037,22 +1037,32 @@ When business relationships change, ERD makes refactoring safer:
 # - TaskResponse3.resolve_owner
 # ... everywhere, easy to miss
 
-# With ERD: modify only one place
+# With ERD: unified relationship management at entity level
 class TaskEntity(BaseModel, BaseEntity):
+    # Add new relationship
     __relationships__ = [
-        # Modify here, all views automatically update
         Relationship(
             field='id',
-            target_kls=list[UserEntity],  # Change from 1:1 to 1:N
+            target_kls=list[UserEntity],  # 1:N relationship
             loader=task_to_assignees_loader
         )
     ]
+
+# Old views will error at runtime, reminding you to fix
+class TaskResponse(BaseModel):
+    # Runtime error: LoadBy('owner_id') cannot find corresponding relationship in ERD
+    owner: Annotated[Optional[User], LoadBy('owner_id')] = None
+
+# New views with explicit type declaration
+class TaskResponse(BaseModel):
+    # Must explicitly declare type as list[User] (should match target_kls in ERD)
+    assignees: Annotated[list[User], LoadBy('id')] = []
 ```
 
 **Value:**
-- ✅ **Clear change scope**: modify one place, takes effect globally
-- ✅ **Compile-time checking**: type errors discovered immediately
-- ✅ **Easier regression testing**: impact scope controllable
+- ✅ **Clear change scope**: relationship definitions centralized, impact scope clear
+- ✅ **Runtime checking**: using non-existent relationships immediately errors, won't silently fail
+- ✅ **Easier regression testing**: test coverage exposes issues during development
 
 ### GraphQL vs pydantic-resolve ERD
 
@@ -1061,8 +1071,8 @@ class TaskEntity(BaseModel, BaseEntity):
 | **Relationship definition location** | Scattered in each Resolver | Centralized in entity definitions |
 | **Relationship reuse** | Re-declared for each query | Define once, reuse everywhere |
 | **Visualization** | Need additional tools | fastapi-voyager auto-generates |
-| **Type inference** | Manual declaration | Automatic inference |
-| **Refactoring safety** | Easy to miss | Compile-time checking |
+| **Declaration syntax** | Manual Resolver | LoadBy simplifies declaration |
+| **Refactoring safety** | Easy to miss | Centralized + Runtime checking |
 | **Business modeling** | Query-driven | Model-driven |
 
 ### Real-World Case: Refactoring a Team Management System
@@ -1092,7 +1102,7 @@ class Task:
 
 **Using pydantic-resolve ERD:**
 ```python
-# 1. Modify entity relationship (only this one place)
+# 1. Modify entity relationship
 class TaskEntity(BaseModel, BaseEntity):
     __relationships__ = [
         Relationship(
@@ -1102,15 +1112,21 @@ class TaskEntity(BaseModel, BaseEntity):
         )
     ]
 
-# 2. Update views (using LoadBy auto-inference)
+# 2. Update views
+# Old views will error at runtime
 class TaskResponse(BaseModel):
-    # Type automatically inferred as list[User]
+    # Runtime error: LoadBy('owner_id') cannot find corresponding relationship in ERD
+    owner: Annotated[Optional[User], LoadBy('owner_id')] = None
+
+# New views with correct types
+class TaskResponse(BaseModel):
+    # Must explicitly declare type as list[User]
     assignees: Annotated[list[User], LoadBy('id')] = []
 
 # 3. Runtime checks
-# - If any view still uses old relationship, type check will error
-# - IDE will hint type mismatch
-# - Refactoring is safe and controllable
+# - If any view still uses old relationship, runtime will immediately error
+# - Centralized relationship definition makes impact scope clearer
+# - Combined with testing, ensures refactoring safety and completeness
 ```
 
 ### Long-Term Value of ERD
@@ -1138,8 +1154,8 @@ ERD is pydantic-resolve's **hidden advantage** over GraphQL:
 
 1. **Centralized management**: Define relationships once, reuse globally
 2. **Visualization**: Auto-generate dependency diagrams
-3. **Type safety**: Automatic inference, compile-time checking
-4. **Refactoring-friendly**: Modify one place, takes effect globally
+3. **Simplified declaration**: LoadBy avoids repeating resolve methods
+4. **Refactoring-friendly**: Centralized definition + runtime checking
 5. **Business modeling**: Forces thinking at entity level
 
 This makes pydantic-resolve not just a **data assembly tool**, but a **business modeling framework**, providing a solid data model foundation for long-term maintenance projects.
