@@ -88,6 +88,16 @@
 
 ---
 
+## Preface
+
+When dealing with complex business scenarios in Python web development, developers often face a dilemma: traditional ORM approaches are intuitive but prone to N+1 query problems, while GraphQL is flexible and powerful but has a steep learning curve and is difficult to optimize. More importantly, issues like the confusion between business models and data models, and incorrect dependency directions, lead to unmaintainable code where business logic gets hijacked by implementation details.
+
+This article presents a Clean Architecture practice based on **Pydantic-Resolve** and **FastAPI-Voyager**. The core philosophy of this approach is: **"Let code reflect business, not make business adapt to code."** By using ERD (Entity Relationship Diagram) to explicitly declare business relationships, we achieve decoupling of business models from technical implementation. DataLoader automatically handles batch loading, transparently solving performance issues. FastAPI-Voyager visualizes the architecture, making the boundary between business models and use cases clearly visible.
+
+Starting from an analysis of root problems, this article explores Clean Architecture's dependency rules in depth, explains Pydantic-Resolve's core concepts (ERD, DataLoader, Resolve/Post, Expose/Collect, etc.), and demonstrates a complete development workflow. Whether you're looking for a GraphQL alternative or hoping to improve your existing project's architecture, you'll find valuable insights here.
+
+---
+
 ## 1. Background and Problems
 
 ### 1.1 Current Mainstream Approaches and Their Pain Points
