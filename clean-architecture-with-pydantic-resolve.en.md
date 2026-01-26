@@ -443,13 +443,13 @@ async def team_to_users_loader(team_ids: list[int]):
 
 **Key Differences**:
 
-| Dimension | SQLAlchemy ORM | Pydantic-Resolve ERD |
-|------|----------------|---------------------|
-| **Intermediate table location** | Exposed in business layer | Hidden in loader implementation |
-| **Business semantics** | Technical relationship (`secondary`) | Business relationship (`team contains members`) |
-| **Query code** | Need to join intermediate table | `loader.load(team_id)` |
-| **Code location** | Scattered across places | Centralized in loader |
-| **Testing** | Depends on database table structure | Can mock loader |
+| Dimension                       | SQLAlchemy ORM                       | Pydantic-Resolve ERD                            |
+| ------------------------------- | ------------------------------------ | ----------------------------------------------- |
+| **Intermediate table location** | Exposed in business layer            | Hidden in loader implementation                 |
+| **Business semantics**          | Technical relationship (`secondary`) | Business relationship (`team contains members`) |
+| **Query code**                  | Need to join intermediate table      | `loader.load(team_id)`                          |
+| **Code location**               | Scattered across places              | Centralized in loader                           |
+| **Testing**                     | Depends on database table structure  | Can mock loader                                 |
 
 **Architecture Advantages**:
 
@@ -506,6 +506,7 @@ Outer layers depend on inner layers, inner layers don't depend on outer layers.
 ```
 
 Following the dependency rule requires attention to several key points. First, inner layers don't know about outer layers' existence—this means core business logic doesn't depend on any framework, database, or UI details. Second, inner layers don't contain outer layer information—for example, business rules shouldn't know whether data is stored with PostgreSQL or MongoDB. Finally, outer layer implementations can be replaced at any time without affecting inner layers—this means we can switch from SQLAlchemy to MongoDB, or from FastAPI to Django, without modifying business logic code.
+
 #### Principle 2: Business Rules Independence
 
 ```python
@@ -577,6 +578,7 @@ In web development, dependency rules can be understood as follows:
 ```
 
 **Key insights**:
+
 - **Entities shouldn't know about SQLAlchemy's existence**
 - **Business Rules shouldn't know about database table structures**
 - **Use Cases shouldn't know about HTTP protocol details**
@@ -1138,6 +1140,7 @@ class TaskResponse(BaseModel):
 ```
 
 **Data flow**:
+
 ```
 Story (story_name: "Sprint 1")
   └─ Task (name: "Fix bug")
@@ -1173,6 +1176,7 @@ class StoryResponse(BaseModel):
 ```
 
 **Data flow**:
+
 ```
 Story
   ├─ Task 1 (owner: Alice)
@@ -1204,6 +1208,7 @@ These abstraction dimensions remain orthogonal, each solving a specific problem,
 ### 4.0 Why Architecture Visualization?
 
 If you've used GraphQL, you're surely impressed by GraphiQL. GraphiQL is an interactive IDE that lets you:
+
 - Browse complete GraphQL Schema
 - Explore each Type's fields and relationships
 - Write and test queries in real-time
@@ -1212,6 +1217,7 @@ If you've used GraphQL, you're surely impressed by GraphiQL. GraphiQL is an inte
 GraphiQL's core value lies in: **it makes invisible Schema visible and explorable**. Developers no longer need to read extensive documentation or code to quickly understand GraphQL API structure.
 
 But in RESTful API + Pydantic-Resolve architecture, we face similar challenges. Although we have ERD to define business entity relationships, and Response Models to define API return structures, this information is scattered across various places in the code. Without tool support, developers need to:
+
 - Read extensive code to understand business relationships
 - Manually trace data flow
 - Struggle to discover architecture drift or excessive nesting
@@ -1219,6 +1225,7 @@ But in RESTful API + Pydantic-Resolve architecture, we face similar challenges. 
 **FastAPI-Voyager is like GraphiQL for the Pydantic-Resolve world**.
 
 It provides similar interactive exploration experience, but oriented towards RESTful API architecture:
+
 - **Visualized ERD**: see all entities and their relationships
 - **API dependency graph**: view each API's returned data structure and dependencies
 - **Interactive exploration**: click any node to view upstream and downstream dependencies
@@ -1226,13 +1233,13 @@ It provides similar interactive exploration experience, but oriented towards RES
 
 But more importantly, Voyager provides unique advantages that GraphiQL doesn't have:
 
-| Dimension | GraphiQL (GraphQL) | FastAPI-Voyager (Pydantic-Resolve) |
-|------|-------------------|----------------------------------|
-| **Business model** | Schema mixes entities and use cases | ERD independently defines business entities |
-| **Use case boundaries** | blurred, hard to distinguish | clear, each Route is a use case |
-| **Relationship definitions** | hidden in Schema | explicitly declared in ERD |
-| **Data flow** | need to read Resolver | visualized dependency chains |
-| **Performance insights** | hard to discover N+1 | color-marked resolve/post operations |
+| Dimension                    | GraphiQL (GraphQL)                  | FastAPI-Voyager (Pydantic-Resolve)          |
+| ---------------------------- | ----------------------------------- | ------------------------------------------- |
+| **Business model**           | Schema mixes entities and use cases | ERD independently defines business entities |
+| **Use case boundaries**      | blurred, hard to distinguish        | clear, each Route is a use case             |
+| **Relationship definitions** | hidden in Schema                    | explicitly declared in ERD                  |
+| **Data flow**                | need to read Resolver               | visualized dependency chains                |
+| **Performance insights**     | hard to discover N+1                | color-marked resolve/post operations        |
 
 GraphiQL makes GraphQL Schema visible, while Voyager makes the separation between business models and use cases visible. It not only displays API structure, but more importantly shows **how business models are used by different use cases**, which is the core idea of Clean Architecture.
 
@@ -1372,6 +1379,7 @@ Using Voyager: open /voyager, click the API of interest, see dependent models an
 Problem domain: project management system
 
 Core entities:
+
 - User (user)
 - Team (team)
 - Sprint (sprint)
@@ -1383,6 +1391,7 @@ Core entities:
 
 ```markdown
 Business relationships:
+
 - Team 1:N User (team members)
 - Team 1:N Sprint (sprints)
 - Sprint 1:N Story (stories)
@@ -1659,38 +1668,38 @@ app.include_router(router)
 
 ### 6.1 vs Traditional ORM
 
-| Dimension | Traditional ORM (SQLAlchemy) | Pydantic-Resolve |
-|------|----------------------|------------------|
-| **Focus** | Data persistence | Business data assembly |
-| **Relationship definition** | Based on foreign key constraints | Based on business semantics |
-| **Data loading** | Eager/Lazy Loading | DataLoader batch loading |
-| **Flexibility** | Limited by database structure | Fully flexible |
-| **N+1 problem** | Prone to occur, requires manual optimization | Auto-avoided |
-| **Business expression** | Hidden in queries | Explicitly declared |
-| **Testing** | Depends on database | Can test independently |
+| Dimension                   | Traditional ORM (SQLAlchemy)                 | Pydantic-Resolve            |
+| --------------------------- | -------------------------------------------- | --------------------------- |
+| **Focus**                   | Data persistence                             | Business data assembly      |
+| **Relationship definition** | Based on foreign key constraints             | Based on business semantics |
+| **Data loading**            | Eager/Lazy Loading                           | DataLoader batch loading    |
+| **Flexibility**             | Limited by database structure                | Fully flexible              |
+| **N+1 problem**             | Prone to occur, requires manual optimization | Auto-avoided                |
+| **Business expression**     | Hidden in queries                            | Explicitly declared         |
+| **Testing**                 | Depends on database                          | Can test independently      |
 
 ### 6.2 vs GraphQL
 
-| Dimension | GraphQL | Pydantic-Resolve |
-|------|---------|------------------|
-| **Query method** | Frontend custom queries | Backend defines Schema |
-| **Type safety** | Needs SDL + toolchain | Native Pydantic |
-| **Learning curve** | Steep | Gentle |
-| **Performance** | DataLoader (manual config) | DataLoader (auto) |
-| **Debugging** | Complex | Simple (Python code) |
-| **Integration** | Needs additional server | Native FastAPI |
-| **Flexibility** | Overly flexible, hard to optimize | Clear API contracts |
-| **ERD/use case separation** | Blurred, mixed in Schema | Clear separation, ERD independent |
+| Dimension                   | GraphQL                           | Pydantic-Resolve                  |
+| --------------------------- | --------------------------------- | --------------------------------- |
+| **Query method**            | Frontend custom queries           | Backend defines Schema            |
+| **Type safety**             | Needs SDL + toolchain             | Native Pydantic                   |
+| **Learning curve**          | Steep                             | Gentle                            |
+| **Performance**             | DataLoader (manual config)        | DataLoader (auto)                 |
+| **Debugging**               | Complex                           | Simple (Python code)              |
+| **Integration**             | Needs additional server           | Native FastAPI                    |
+| **Flexibility**             | Overly flexible, hard to optimize | Clear API contracts               |
+| **ERD/use case separation** | Blurred, mixed in Schema          | Clear separation, ERD independent |
 
 ### 6.3 vs DDD Frameworks
 
-| Dimension | DDD Frameworks (e.g., Django-eav) | Pydantic-Resolve |
-|------|------------------------|------------------|
-| **Complexity** | High (complete DDD implementation) | Low (only focus on data assembly) |
-| **Domain model** | Forces DDD concepts | Flexible, optional use |
-| **Relationship with ORM** | Encapsulates ORM | Works with ORM |
-| **Learning cost** | High | Low |
-| **Applicable scenarios** | Large complex domains | Small to medium projects |
+| Dimension                 | DDD Frameworks (e.g., Django-eav)  | Pydantic-Resolve                  |
+| ------------------------- | ---------------------------------- | --------------------------------- |
+| **Complexity**            | High (complete DDD implementation) | Low (only focus on data assembly) |
+| **Domain model**          | Forces DDD concepts                | Flexible, optional use            |
+| **Relationship with ORM** | Encapsulates ORM                   | Works with ORM                    |
+| **Learning cost**         | High                               | Low                               |
+| **Applicable scenarios**  | Large complex domains              | Small to medium projects          |
 
 ---
 
@@ -1745,13 +1754,13 @@ FastAPI-Voyager presents architecture in a visualized manner, providing a mappin
 
 #### 5. Development Efficiency Improvement
 
-| Phase | Traditional approach | Using this toolkit |
-|------|---------|-------------|
-| Design phase | Text description, easy to miss | ERD visualization, clear expression |
-| Development phase | Manual data assembly, duplicate code | Declarative, auto resolution |
-| Testing phase | Needs database | Business logic testable independently |
-| Debugging phase | Read code, hard to understand | Graphically view dependency relationships |
-| Maintenance phase | Modify multiple places, error-prone | Centralized management, impact analysis |
+| Phase             | Traditional approach                 | Using this toolkit                        |
+| ----------------- | ------------------------------------ | ----------------------------------------- |
+| Design phase      | Text description, easy to miss       | ERD visualization, clear expression       |
+| Development phase | Manual data assembly, duplicate code | Declarative, auto resolution              |
+| Testing phase     | Needs database                       | Business logic testable independently     |
+| Debugging phase   | Read code, hard to understand        | Graphically view dependency relationships |
+| Maintenance phase | Modify multiple places, error-prone  | Centralized management, impact analysis   |
 
 #### 6. Easier Testing and Debugging
 
@@ -1800,6 +1809,7 @@ The core idea of this method is:
 More deeply, the core idea of this approach is **respecting business complexity** while minimizing related code complexity on that foundation. Business itself is complex—various entity relationships, business rules, use case scenarios—these complexities are unavoidable. But code complexity can be reduced through abstraction and encapsulation.
 
 Pydantic-Resolve encapsulates common code patterns into several clear concepts through DSL-like approaches:
+
 - **ERD** encapsulates business relationship declarations
 - **DataLoader** encapsulates batch loading logic
 - **Resolve/Post** encapsulates data assembly and computation flow

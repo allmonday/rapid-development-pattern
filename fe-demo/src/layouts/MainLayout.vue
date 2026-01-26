@@ -11,27 +11,23 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title>
-          Quasar App
-        </q-toolbar-title>
+        <q-toolbar-title> Quasar App </q-toolbar-title>
 
         <div>Quasar v{{ $q.version }}</div>
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-    >
+    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
-        <q-item-label
-          header
-        >
-          Links
-        </q-item-label>
+        <q-item-label header> Links </q-item-label>
 
-        <q-item clickable tag="a" :to="{name: link.name}" v-for="link in links" :key="link.title">
+        <q-item
+          clickable
+          tag="a"
+          :to="{ name: link.name }"
+          v-for="link in links"
+          :key="link.title"
+        >
           <q-item-section>
             <q-item-label>
               <span>{{ link.title }}</span>
@@ -51,9 +47,9 @@
 import { ref } from 'vue';
 
 type Link = {
-  title: string
-  name: string
-}
+  title: string;
+  name: string;
+};
 const links: Link[] = [
   {
     title: 'Sample 1',
@@ -85,9 +81,9 @@ const links: Link[] = [
   },
 ];
 
-const leftDrawerOpen = ref(false)
+const leftDrawerOpen = ref(false);
 
 function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value
+  leftDrawerOpen.value = !leftDrawerOpen.value;
 }
 </script>

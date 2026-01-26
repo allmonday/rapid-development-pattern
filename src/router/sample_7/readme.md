@@ -18,7 +18,6 @@ router-viz -m src.main  --model_prefixs src.servicesls --tags sample_7 --show_fi
 
 > generate_list_empty_loader 默认返回 []
 
-
 ```python
 UserLoader = generate_single_empty_loader('UserLoader')
 
@@ -32,7 +31,6 @@ router 中使用 `add_single_to_loader` 来处理 `prime` 逻辑
 
 模拟预先获取 users 信息， 然后加入 loader, 再提供给 `Sample7TaskDetail` 使用。
 
-
 ```python
 def add_single_to_loader(loader, items, get_key):
     _map = {}
@@ -43,7 +41,7 @@ def add_single_to_loader(loader, items, get_key):
 
 @route.get('/tasks', response_model=list[Sample7TaskDetail])
 async def get_tasks(session: AsyncSession = Depends(db.get_session)):
-    # 初始化 loader, 提前加载所有数据 
+    # 初始化 loader, 提前加载所有数据
     user_loader = UserLoader()
     users = await uq.get_users(session)
     add_single_to_loader(user_loader, users, lambda u: u.id)
@@ -54,6 +52,7 @@ async def get_tasks(session: AsyncSession = Depends(db.get_session)):
     tasks = await Resolver(loader_instances={UserLoader: user_loader}).resolve(tasks)
     return tasks
 ```
+
 > 如果注释 `add_single_to_loader`方法， 会发现所有的 user 都是 None
 
 第二个稍微复杂一些的例子， 从 user[1] 开始， 层层寻找 user 拥有的 story, story 归属的 sprint， sprint 归属的 team, 然后反向从 Teams 开始层层往下展示。

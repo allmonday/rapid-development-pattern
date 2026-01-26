@@ -9,7 +9,7 @@
 - `test_loader.py`
 - `test_query.py`
 
-这两个文件构成了 service 测试的基石, 
+这两个文件构成了 service 测试的基石,
 
 对于没有session传入的 loader 案例, 通过简单的 mock 也能搞掂.
 

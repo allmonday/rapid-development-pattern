@@ -37,7 +37,7 @@ async def get_page_info(session: AsyncSession = Depends(db.get_session)):
 
 router 里面只要初始化一下, 剩下的交给 Resolver 就好了.
 
-> 到这里, 你也许会发现, 定义 schema 的过程和使用 GraphQL 编写Query的实现是很相似的. 
+> 到这里, 你也许会发现, 定义 schema 的过程和使用 GraphQL 编写Query的实现是很相似的.
 >
 > 一个小的最佳实践: resolve_method 中不要自己写业务查询逻辑, 要调用 servcie 中封装好的 query 方法. 这样可以保持 schema 的简洁和拼装的清晰. schema 中要么调用 query, 要么调用 loader, 用配置+组合的思考方式来定义 schema.
 

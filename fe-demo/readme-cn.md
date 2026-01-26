@@ -1,6 +1,7 @@
 # fe-demo
 
 ## Start
+
 ```bash
 # run backend
 uvicorn src.main:app  --port=8001 --reload
@@ -16,6 +17,7 @@ npm run dev
 
 开始之后依次查看 `src/pages/SampleXPage.vue`, 以Sample1为例.
 backend:
+
 ```python
 @route.get('/teams-with-detail', response_model=List[Sample1TeamDetail])
 async def get_teams_with_detail(session: AsyncSession = Depends(db.get_session)):
@@ -27,6 +29,7 @@ async def get_teams_with_detail(session: AsyncSession = Depends(db.get_session))
 ```
 
 frontend:
+
 ```js
 import {Sample1Service, Sample1TeamDetail} from 'src/client'
 import { onMounted, ref } from 'vue';

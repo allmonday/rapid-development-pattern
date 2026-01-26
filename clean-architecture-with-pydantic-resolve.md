@@ -443,13 +443,13 @@ async def team_to_users_loader(team_ids: list[int]):
 
 **关键差异**：
 
-| 维度 | SQLAlchemy ORM | Pydantic-Resolve ERD |
-|------|----------------|---------------------|
-| **中间表位置** | 暴露在业务层 | 隐藏在 loader 实现中 |
-| **业务语义** | 技术关系 (`secondary`) | 业务关系 (`团队包含成员`) |
-| **查询代码** | 需要 join 中间表 | `loader.load(team_id)` |
-| **代码位置** | 分散在多处 | 集中在 loader |
-| **测试** | 依赖数据库表结构 | 可 mock loader |
+| 维度           | SQLAlchemy ORM         | Pydantic-Resolve ERD      |
+| -------------- | ---------------------- | ------------------------- |
+| **中间表位置** | 暴露在业务层           | 隐藏在 loader 实现中      |
+| **业务语义**   | 技术关系 (`secondary`) | 业务关系 (`团队包含成员`) |
+| **查询代码**   | 需要 join 中间表       | `loader.load(team_id)`    |
+| **代码位置**   | 分散在多处             | 集中在 loader             |
+| **测试**       | 依赖数据库表结构       | 可 mock loader            |
 
 **架构优势**：
 
@@ -580,6 +580,7 @@ def task_entity_to_orm(entity: TaskEntity) -> Task:
 ```
 
 **关键洞察**：
+
 - **Entities 不应该知道 SQLAlchemy 的存在**
 - **Business Rules 不应该知道数据库表结构**
 - **Use Cases 不应该知道 HTTP 协议的细节**
@@ -941,13 +942,13 @@ async def order_status_from_redis_loader(order_ids: list[int]) -> list[OrderStat
 
 **与传统 ORM 的对比**：
 
-| 维度 | 传统 ORM (SQLAlchemy) | Pydantic-Resolve ERD |
-|------|----------------------|---------------------|
-| **数据源** | 仅限数据库 | 任何数据源 |
-| **关系定义** | `relationship()` + 外键 | `Relationship()` + loader |
-| **跨服务查询** | 需要手动调用 API | 无缝集成，就像本地查询 |
-| **混合数据源** | 困难 | 天然支持 |
-| **测试** | 需要数据库 | 可 mock loader |
+| 维度           | 传统 ORM (SQLAlchemy)   | Pydantic-Resolve ERD      |
+| -------------- | ----------------------- | ------------------------- |
+| **数据源**     | 仅限数据库              | 任何数据源                |
+| **关系定义**   | `relationship()` + 外键 | `Relationship()` + loader |
+| **跨服务查询** | 需要手动调用 API        | 无缝集成，就像本地查询    |
+| **混合数据源** | 困难                    | 天然支持                  |
+| **测试**       | 需要数据库              | 可 mock loader            |
 
 **实际应用场景**：
 
@@ -1183,6 +1184,7 @@ class TaskResponse(BaseModel):
 ```
 
 **数据流**：
+
 ```
 Story (story_name: "Sprint 1")
   └─ Task (name: "Fix bug")
@@ -1218,6 +1220,7 @@ class StoryResponse(BaseModel):
 ```
 
 **数据流**：
+
 ```
 Story
   ├─ Task 1 (owner: Alice)
@@ -1240,7 +1243,7 @@ Pydantic-Resolve 通过多个维度的抽象，将构建业务数据中常见的
 5. **Expose/Collect**：提供跨层数据传递能力，支持父节点向子节点暴露数据和子节点向父节点收集数据
 6. **LoadBy**：基于 ERD 自动解析关系，减少重复代码
 
-这些抽象维度之间保持正交，每个维度解决一个特定的问题，互不干扰又可以自由组合。DefineSubset 负责字段选择，ERD 负责定义关系，LoadBy 负责使用关系，DataLoader 负责批量加载，Resolve/Post 负责数据组装与计算，Expose/Collect 负责跨层数据传递。 
+这些抽象维度之间保持正交，每个维度解决一个特定的问题，互不干扰又可以自由组合。DefineSubset 负责字段选择，ERD 负责定义关系，LoadBy 负责使用关系，DataLoader 负责批量加载，Resolve/Post 负责数据组装与计算，Expose/Collect 负责跨层数据传递。
 
 各司其职。
 
@@ -1251,6 +1254,7 @@ Pydantic-Resolve 通过多个维度的抽象，将构建业务数据中常见的
 ### 4.0 为什么需要架构可视化？
 
 如果你使用过 GraphQL，一定对 GraphiQL 印象深刻。GraphiQL 是一个交互式的 IDE，让你可以：
+
 - 浏览完整的 GraphQL Schema
 - 探索每个 Type 的字段和关系
 - 实时编写和测试查询
@@ -1259,6 +1263,7 @@ Pydantic-Resolve 通过多个维度的抽象，将构建业务数据中常见的
 GraphiQL 的核心价值在于：**它让不可见的 Schema 变得可见和可探索**。开发者不再需要阅读大量文档或代码，就能快速理解 GraphQL API 的结构。
 
 但在 RESTful API + Pydantic-Resolve 的架构中，我们面临类似的挑战。虽然我们有 ERD 定义业务实体关系，有 Response Model 定义 API 返回结构，但这些信息散落在代码的各个地方。如果没有工具支持，开发者需要：
+
 - 阅读大量代码才能理解业务关系
 - 手动追踪数据流向
 - 难以发现架构偏离或过度嵌套
@@ -1266,6 +1271,7 @@ GraphiQL 的核心价值在于：**它让不可见的 Schema 变得可见和可�
 **FastAPI-Voyager 就像是 Pydantic-Resolve 世界的 GraphiQL**。
 
 它提供了类似的交互式探索体验，但面向的是 RESTful API 架构：
+
 - **可视化 ERD**：看到所有实体及其关系
 - **API 依赖图**：查看每个 API 返回的数据结构及其依赖
 - **交互式探索**：点击任意节点查看上下游依赖
@@ -1273,13 +1279,13 @@ GraphiQL 的核心价值在于：**它让不可见的 Schema 变得可见和可�
 
 但更重要的是，Voyager 提供了 GraphiQL 所没有的独特优势：
 
-| 维度 | GraphiQL (GraphQL) | FastAPI-Voyager (Pydantic-Resolve) |
-|------|-------------------|----------------------------------|
-| **业务模型** | Schema 混合了实体和用例 | ERD 独立定义业务实体 |
-| **用例边界** | 模糊，难以区分 | 清晰，每个 Route 是一个用例 |
-| **关系定义** | 隐藏在 Schema 中 | 显式声明在 ERD 中 |
-| **数据流** | 需要阅读 Resolver | 可视化展示依赖链路 |
-| **性能洞察** | 难以发现 N+1 | 颜色标记 resolve/post 操作 |
+| 维度         | GraphiQL (GraphQL)      | FastAPI-Voyager (Pydantic-Resolve) |
+| ------------ | ----------------------- | ---------------------------------- |
+| **业务模型** | Schema 混合了实体和用例 | ERD 独立定义业务实体               |
+| **用例边界** | 模糊，难以区分          | 清晰，每个 Route 是一个用例        |
+| **关系定义** | 隐藏在 Schema 中        | 显式声明在 ERD 中                  |
+| **数据流**   | 需要阅读 Resolver       | 可视化展示依赖链路                 |
+| **性能洞察** | 难以发现 N+1            | 颜色标记 resolve/post 操作         |
 
 GraphiQL 让 GraphQL 的 Schema 变得可见，而 Voyager 让业务模型和用例的分离变得可见。它不仅展示了 API 的结构，更重要的是展示了**业务模型如何被不同的用例所使用**，这正是 Clean Architecture 的核心思想。
 
@@ -1411,6 +1417,7 @@ pydantic-resolve 的操作通过颜色编码来直观展示。绿色标记的 re
 问题域：项目管理系统
 
 核心实体：
+
 - User (用户)
 - Team (团队)
 - Sprint (冲刺)
@@ -1422,6 +1429,7 @@ pydantic-resolve 的操作通过颜色编码来直观展示。绿色标记的 re
 
 ```markdown
 业务关系：
+
 - Team 1:N User (团队成员)
 - Team 1:N Sprint (冲刺)
 - Sprint 1:N Story (故事)
@@ -1713,15 +1721,15 @@ app.include_router(router)
 
 ### 6.1 vs 传统 ORM
 
-| 维度 | 传统 ORM (SQLAlchemy) | Pydantic-Resolve |
-|------|----------------------|------------------|
-| **关注点** | 数据持久化 | 业务数据组装 |
-| **关系定义** | 基于外键约束 | 基于业务语义 |
-| **数据加载** | Eager/Lazy Loading | DataLoader 批量加载 |
-| **灵活性** | 受数据库结构限制 | 完全灵活 |
-| **N+1 问题** | 容易出现，需手动优化 | 自动避免 |
-| **业务表达** | 隐藏在查询中 | 显式声明 |
-| **测试** | 依赖数据库 | 可独立测试 |
+| 维度         | 传统 ORM (SQLAlchemy) | Pydantic-Resolve    |
+| ------------ | --------------------- | ------------------- |
+| **关注点**   | 数据持久化            | 业务数据组装        |
+| **关系定义** | 基于外键约束          | 基于业务语义        |
+| **数据加载** | Eager/Lazy Loading    | DataLoader 批量加载 |
+| **灵活性**   | 受数据库结构限制      | 完全灵活            |
+| **N+1 问题** | 容易出现，需手动优化  | 自动避免            |
+| **业务表达** | 隐藏在查询中          | 显式声明            |
+| **测试**     | 依赖数据库            | 可独立测试          |
 
 **代码对比**：
 
@@ -1750,15 +1758,15 @@ async def get_team(team_id: int, session: AsyncSession = Depends(get_session)):
 
 ### 6.2 vs GraphQL
 
-| 维度 | GraphQL | Pydantic-Resolve |
-|------|---------|------------------|
-| **查询方式** | 前端自定义查询 | 后端定义 Schema |
-| **类型安全** | 需要 SDL + 工具链 | 原生 Pydantic |
-| **学习曲线** | 陡峭 | 平缓 |
-| **性能** | DataLoader（手动配置） | DataLoader（自动） |
-| **调试** | 复杂 | 简单（Python 代码） |
-| **集成** | 需要额外服务器 | 原生 FastAPI |
-| **灵活性** | 过于灵活，难以优化 | 明确的 API 契约 |
+| 维度               | GraphQL                    | Pydantic-Resolve       |
+| ------------------ | -------------------------- | ---------------------- |
+| **查询方式**       | 前端自定义查询             | 后端定义 Schema        |
+| **类型安全**       | 需要 SDL + 工具链          | 原生 Pydantic          |
+| **学习曲线**       | 陡峭                       | 平缓                   |
+| **性能**           | DataLoader（手动配置）     | DataLoader（自动）     |
+| **调试**           | 复杂                       | 简单（Python 代码）    |
+| **集成**           | 需要额外服务器             | 原生 FastAPI           |
+| **灵活性**         | 过于灵活，难以优化         | 明确的 API 契约        |
 | **ERD 与用例分离** | 界限模糊，混合在 Schema 中 | 清晰分离，ERD 独立存在 |
 
 **Schema 对比**：
@@ -1766,15 +1774,15 @@ async def get_team(team_id: int, session: AsyncSession = Depends(get_session)):
 ```graphql
 # GraphQL Schema - ERD 和用例混合
 type Query {
-    team(id: ID!): Team           # 用例
-    teamMembers(id: ID!): [User]  # 另一个用例
+  team(id: ID!): Team # 用例
+  teamMembers(id: ID!): [User] # 另一个用例
 }
 
 type Team {
-    id: ID!
-    name: String!
-    sprints: [Sprint!]!           # 实体关系
-    members: [User!]!             # 实体关系
+  id: ID!
+  name: String!
+  sprints: [Sprint!]! # 实体关系
+  members: [User!]! # 实体关系
 }
 
 # 问题：Team 类型同时包含 ERD（实体定义）和多个用例的需求
@@ -1858,22 +1866,22 @@ Pydantic-Resolve 方式：
 
 **最佳实践的清晰性**：
 
-| 问题 | GraphQL | Pydantic-Resolve |
-|------|---------|------------------|
+| 问题              | GraphQL                        | Pydantic-Resolve                      |
+| ----------------- | ------------------------------ | ------------------------------------- |
 | 如何设计 Schema？ | 模糊：按实体？按用例？按字段？ | 清晰：ERD 定义实体，Response 定义用例 |
-| 如何组织 Schema？ | 困难：所有东西在 Schema 中 | 简单：实体在 ERD，用例在 Route |
-| 如何复用逻辑？ | 难以复用：Fragment 有限 | 易于复用：`DefineSubset` 继承实体 |
-| 如何控制权限？ | 复杂：需要在 Resolver 层处理 | 清晰：不同 Route 有不同的权限控制 |
+| 如何组织 Schema？ | 困难：所有东西在 Schema 中     | 简单：实体在 ERD，用例在 Route        |
+| 如何复用逻辑？    | 难以复用：Fragment 有限        | 易于复用：`DefineSubset` 继承实体     |
+| 如何控制权限？    | 复杂：需要在 Resolver 层处理   | 清晰：不同 Route 有不同的权限控制     |
 
 ### 6.3 vs DDD 框架
 
-| 维度 | DDD 框架 (如 Django-eav) | Pydantic-Resolve |
-|------|------------------------|------------------|
-| **复杂度** | 高（完整 DDD 实现） | 低（只关注数据组装） |
-| **领域模型** | 强制使用 DDD 概念 | 灵活，可选择性使用 |
-| **与 ORM 关系** | 封装 ORM | 与 ORM 协作 |
-| **学习成本** | 高 | 低 |
-| **适用场景** | 大型复杂领域 | 中小型项目 |
+| 维度            | DDD 框架 (如 Django-eav) | Pydantic-Resolve     |
+| --------------- | ------------------------ | -------------------- |
+| **复杂度**      | 高（完整 DDD 实现）      | 低（只关注数据组装） |
+| **领域模型**    | 强制使用 DDD 概念        | 灵活，可选择性使用   |
+| **与 ORM 关系** | 封装 ORM                 | 与 ORM 协作          |
+| **学习成本**    | 高                       | 低                   |
+| **适用场景**    | 大型复杂领域             | 中小型项目           |
 
 **架构对比**：
 
@@ -1962,13 +1970,13 @@ FastAPI-Voyager 将架构以可视化的方式呈现出来，提供了业务模�
 
 #### 5. 开发效率提升
 
-| 阶段 | 传统方式 | 使用这套工具 |
-|------|---------|-------------|
-| 设计阶段 | 文字描述，容易遗漏 | ERD 可视化，清晰表达 |
-| 开发阶段 | 手动组装数据，重复代码 | 声明式，自动解析 |
-| 测试阶段 | 需要数据库 | 业务逻辑可独立测试 |
-| 调试阶段 | 阅读代码，难以理解 | 图形化查看依赖关系 |
-| 维护阶段 | 修改多处，容易出错 | 集中管理，影响分析 |
+| 阶段     | 传统方式               | 使用这套工具         |
+| -------- | ---------------------- | -------------------- |
+| 设计阶段 | 文字描述，容易遗漏     | ERD 可视化，清晰表达 |
+| 开发阶段 | 手动组装数据，重复代码 | 声明式，自动解析     |
+| 测试阶段 | 需要数据库             | 业务逻辑可独立测试   |
+| 调试阶段 | 阅读代码，难以理解     | 图形化查看依赖关系   |
+| 维护阶段 | 修改多处，容易出错     | 集中管理，影响分析   |
 
 #### 6. 更易测试和调试
 
@@ -2017,6 +2025,7 @@ Pydantic-Resolve 和 FastAPI-Voyager 的组合，为 Python Web 开发提供了�
 更深层地说，这套做法的核心思想是**尊重业务复杂度**，在此基础上尽量压缩相关的代码复杂度。业务本身是复杂的，有各种实体关系、业务规则、用例场景，这些复杂度是无法避免的。但代码的复杂度可以通过抽象和封装来降低。
 
 Pydantic-Resolve 通过类似 DSL 的方式，将常见的代码模式封装到若干个清晰的概念中：
+
 - **ERD** 封装了业务关系的声明
 - **DataLoader** 封装了批量加载的逻辑
 - **Resolve/Post** 封装了数据组装和计算的流程

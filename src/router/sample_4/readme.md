@@ -6,9 +6,9 @@ router-viz -m src.main  --model_prefixs src.servicesls --tags sample_4 --show_fi
 
 <img width="1623" height="913" alt="image" src="https://github.com/user-attachments/assets/75e67947-a0ee-40e2-961b-7c0bba6fad2e" />
 
-进入 `sample_4`. 介绍如何在数据获取之后进行额外处理. 
+进入 `sample_4`. 介绍如何在数据获取之后进行额外处理.
 
-这次我想在 team, sprint, story 上面添加 task_count 字段, 来统计每一层包含的 task 总数. 
+这次我想在 team, sprint, story 上面添加 task_count 字段, 来统计每一层包含的 task 总数.
 
 使用 `post_method` 可以做到, `post_method` 会在class 的所有 `resolve_methods` 执行完之后, 以同步的方式执行.
 
@@ -19,11 +19,11 @@ class Sample4StoryDetail(ss.Story):
     tasks: list[Sample4TaskDetail] = []
     def resolve_tasks(self, loader=LoaderDepend(tl.story_to_task_loader)):
         return loader.load(self.id)
-    
+
     task_count: int = 0
     def post_task_count(self): # post hook
         return len(self.tasks)
-    
+
 class Sample4SprintDetail(sps.Sprint):
     stories: list[Sample4StoryDetail] = []
     def resolve_stories(self, loader=LoaderDepend(sl.sprint_to_story_loader)):
@@ -51,7 +51,7 @@ class Sample4TeamDetail(tms.Team):
 
 最后就能计算完每一层中的 task_count.
 
-顺带一提, 在 post 方法中, 有一个特殊的方法 `post_default_handler`, 它等所有的 `post_method` 执行完后再执行. 
+顺带一提, 在 post 方法中, 有一个特殊的方法 `post_default_handler`, 它等所有的 `post_method` 执行完后再执行.
 
 用它我们可以做一些有趣的功能:
 
@@ -66,14 +66,13 @@ class Sample4TeamDetail(tms.Team):
     task_count: int = 0
     def post_task_count(self):
         return sum([s.task_count for s in self.sprints])
-    
+
     description: str = ''
     def post_default_handler(self):
-        self.description = f'team: {self.name} has {self.task_count} tasks in total.' 
+        self.description = f'team: {self.name} has {self.task_count} tasks in total.'
 ```
 
 利用这个功能, 我们在复用相同的数据时, 可以做很多定制化的修改.
-
 
 ## 隐藏/过滤字段
 
@@ -87,7 +86,7 @@ class Sample4StoryDetail(ss.Story):
     tasks: list[Sample4TaskDetail] = []
     def resolve_tasks(self, loader=LoaderDepend(tl.story_to_task_loader)):
         return loader.load(self.id)
-    
+
     task_count: int = Field(default=0, exclude=True)
     def post_task_count(self):
         return len(self.tasks)
@@ -95,7 +94,7 @@ class Sample4StoryDetail(ss.Story):
 
 两个改动, 一个是添加了 `model_config`装饰器, 另一个是用 `Field(exclude=True)` 来申明类型.
 
-在pydantic 中,如果exclude=True, 则会在输出中屏蔽该字段, 但是 schema 中依然能看到这个字段. 
+在pydantic 中,如果exclude=True, 则会在输出中屏蔽该字段, 但是 schema 中依然能看到这个字段.
 
 搭配了 `model_config` 就可以保证在 schema properties 中也屏蔽该字段.
 

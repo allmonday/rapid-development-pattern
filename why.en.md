@@ -44,6 +44,7 @@ query GetTeamWithTasks {
 ```
 
 **Advantages:**
+
 - ✅ Clients have full control over required fields
 - ✅ Avoids over-fetching
 - ✅ Type safety (strongly typed Schema)
@@ -82,12 +83,13 @@ query {
     id
     name
     # You want to calculate total tasks for this team
-    totalTasks  # ❌ But this requires recursively traversing all sprints -> stories -> tasks
+    totalTasks # ❌ But this requires recursively traversing all sprints -> stories -> tasks
   }
 }
 ```
 
 **GraphQL's dilemma (using strawberry-graphql):**
+
 ```python
 import strawberry
 
@@ -128,6 +130,7 @@ class Team:
    - Schema becomes bloated
 
 **Reality:**
+
 ```graphql
 # Theoretically GraphQL should be like this
 {
@@ -154,15 +157,16 @@ query SprintReportPage { ... }
 query {
   story(id: 1) {
     tasks {
-      name  # "mvp tech design"
+      name # "mvp tech design"
       # You want: "Team A / Sprint W1 / MVP / mvp tech design"
-      fullPath  # ❌ Cannot access ancestor node data
+      fullPath # ❌ Cannot access ancestor node data
     }
   }
 }
 ```
 
 **GraphQL's dilemma:**
+
 - Resolvers cannot access parent or ancestor node context
 - You either compose on the frontend or add multiple computed fields on the backend
 - Business logic gets scattered across frontend and backend
@@ -226,13 +230,13 @@ query {
 
 For GraphQL developers, migrating to pydantic-resolve feels natural because core concepts are nearly identical:
 
-| GraphQL Concept | pydantic-resolve Equivalent | Similarity |
-|----------------|---------------------------|------------|
-| **GraphQL Type** | Pydantic `BaseModel` | 🟢 95% |
-| **GraphQL Resolver** | `resolve_{field}` method | 🟢 95% |
-| **DataLoader** | DataLoader (identical) | 🟢 100% |
-| **Nested queries** | Nested Pydantic models | 🟢 90% |
-| **Query Schema** | API endpoint + Response Model | 🟡 70% |
+| GraphQL Concept      | pydantic-resolve Equivalent   | Similarity |
+| -------------------- | ----------------------------- | ---------- |
+| **GraphQL Type**     | Pydantic `BaseModel`          | 🟢 95%     |
+| **GraphQL Resolver** | `resolve_{field}` method      | 🟢 95%     |
+| **DataLoader**       | DataLoader (identical)        | 🟢 100%    |
+| **Nested queries**   | Nested Pydantic models        | 🟢 90%     |
+| **Query Schema**     | API endpoint + Response Model | 🟡 70%     |
 
 ### Code Comparison: GraphQL vs pydantic-resolve
 
@@ -345,6 +349,7 @@ class Task(BaseModel):
 ```
 
 **Advantages:**
+
 - ✅ `resolve_` methods: Fetch related data downward (Forward Fetch)
 - ✅ `post_` methods: Calculate and transform after data loads (Backward Change)
 - ✅ `ExposeAs`: Parent nodes expose data to child nodes
@@ -357,6 +362,7 @@ class Task(BaseModel):
 ### 2. Dedicated Endpoints vs Generic Query
 
 **GraphQL approach:**
+
 ```graphql
 # One endpoint, all queries
 POST /graphql
@@ -368,6 +374,7 @@ query SprintReport { ... }
 ```
 
 **pydantic-resolve approach:**
+
 ```python
 # Each endpoint is specifically optimized
 @app.get("/teams-dashboard", response_model=TeamDashboard)
@@ -384,6 +391,7 @@ async def get_sprint_report():
 ```
 
 **Advantages:**
+
 - ✅ **RESTful style**: Follows HTTP semantics, simpler caching
 - ✅ **Fine-grained permission control**: Each endpoint has independent auth
 - ✅ **More direct performance optimization**: Optimize queries per endpoint
@@ -394,6 +402,7 @@ async def get_sprint_report():
 ### 3. Type Safety and Auto-Generation
 
 **GraphQL:**
+
 ```graphql
 # Need to maintain GraphQL Schema
 type Task { ... }
@@ -403,6 +412,7 @@ interface Task { ... }
 ```
 
 **pydantic-resolve:**
+
 ```python
 # Only need to maintain Pydantic models
 class Task(BaseModel):
@@ -414,6 +424,7 @@ class Task(BaseModel):
 ```
 
 **Advantages:**
+
 - ✅ **Single source of truth**: Pydantic models are the only truth
 - ✅ **Auto OpenAPI**: FastAPI auto-generates documentation
 - ✅ **TypeScript generation**: Tools like openapi-typescript generate frontend types in one click
@@ -424,12 +435,14 @@ class Task(BaseModel):
 ### 4. Low Adoption Cost
 
 **GraphQL:**
+
 - Need dedicated GraphQL server
 - Need to learn SDL and Resolver conventions
 - Need to configure dev tools and monitoring
 - Difficult to integrate with existing architecture
 
 **pydantic-resolve:**
+
 ```python
 # Only 3 steps needed
 
@@ -447,6 +460,7 @@ result = await Resolver().resolve(tasks)
 ```
 
 **Advantages:**
+
 - ✅ **Pure Python**: No new language or DSL to learn
 - ✅ **Seamless FastAPI integration**: Just 3 lines of code
 - ✅ **Familiar toolchain**: pytest, black, mypy all work
@@ -457,24 +471,26 @@ result = await Resolver().resolve(tasks)
 ### 5. Better Suited for BFF Layers
 
 **GraphQL's positioning dilemma:**
+
 - It's a universal query language, suitable for external APIs
 - But internal BFF layers need **stable, view-specific interfaces**
 
 **pydantic-resolve's positioning:**
+
 - Designed specifically for BFF layers
 - Each endpoint targets a specific view
 - Stable API contracts, easy to maintain
 
 **Comparison:**
 
-| Dimension | GraphQL | pydantic-resolve |
-|-----------|---------|------------------|
-| Use case | External generic APIs | Internal BFF layers |
-| Flexibility | High (client decides) | Low (server decides) |
-| Stability | Low (queries change arbitrarily) | High (API contracts fixed) |
-| Performance optimization | Difficult (many query combinations) | Simple (fixed endpoints) |
-| Permission control | Complex (field-level) | Simple (endpoint-level) |
-| Caching strategy | Difficult (POST requests) | Simple (HTTP cache) |
+| Dimension                | GraphQL                             | pydantic-resolve           |
+| ------------------------ | ----------------------------------- | -------------------------- |
+| Use case                 | External generic APIs               | Internal BFF layers        |
+| Flexibility              | High (client decides)               | Low (server decides)       |
+| Stability                | Low (queries change arbitrarily)    | High (API contracts fixed) |
+| Performance optimization | Difficult (many query combinations) | Simple (fixed endpoints)   |
+| Permission control       | Complex (field-level)               | Simple (endpoint-level)    |
+| Caching strategy         | Difficult (POST requests)           | Simple (HTTP cache)        |
 
 ---
 
@@ -485,6 +501,7 @@ Let's see the differences through a complete example.
 ### Requirements
 
 Build an API that returns teams and all their tasks, including:
+
 - Team information
 - All Sprints in the team
 - All Stories in each Sprint
@@ -637,6 +654,7 @@ query GetTeamsWithTaskCount {
 ```
 
 **Problems:**
+
 - ❌ `taskCount` requires separate database queries at each level
 - ❌ Story's `taskCount` cannot be passed to Sprint and Team
 - ❌ Generates additional database queries
@@ -726,6 +744,7 @@ async def get_teams(session: AsyncSession = Depends(get_session)):
 ```
 
 **Advantages:**
+
 - ✅ `task_count` automatically calculated at each level
 - ✅ Data aggregates bottom-up, no extra queries needed
 - ✅ Clear logic, easy to maintain
@@ -740,6 +759,7 @@ If you're already familiar with GraphQL, migrating to pydantic-resolve is straig
 ### Step 1: Map GraphQL Type to Pydantic Model
 
 **GraphQL:**
+
 ```graphql
 type User {
   id: ID!
@@ -748,6 +768,7 @@ type User {
 ```
 
 **Pydantic:**
+
 ```python
 class User(BaseModel):
     id: int
@@ -757,6 +778,7 @@ class User(BaseModel):
 ### Step 2: Migrate Resolver
 
 **GraphQL (using strawberry-graphql):**
+
 ```python
 @strawberry.type
 class User:
@@ -769,6 +791,7 @@ class User:
 ```
 
 **pydantic-resolve:**
+
 ```python
 class User(BaseModel):
     tasks: list[Task] = []
@@ -791,6 +814,7 @@ class UserLoader(DataLoader):
 ### Step 4: Split GraphQL Query into Multiple REST Endpoints
 
 **GraphQL:**
+
 ```graphql
 query TeamDashboard { ... }
 query TaskList { ... }
@@ -798,6 +822,7 @@ query SprintReport { ... }
 ```
 
 **pydantic-resolve:**
+
 ```python
 @app.get("/teams/dashboard", response_model=TeamDashboard)
 async def get_teams_dashboard():
@@ -814,11 +839,11 @@ async def get_sprint_report():
 
 ### Learning Time Estimate
 
-| Background | Learning Time |
-|-----------|---------------|
-| **GraphQL + Python** | 2-3 days |
-| **GraphQL + other languages** | 4-6 days |
-| **No experience** | 11-17 days |
+| Background                    | Learning Time |
+| ----------------------------- | ------------- |
+| **GraphQL + Python**          | 2-3 days      |
+| **GraphQL + other languages** | 4-6 days      |
+| **No experience**             | 11-17 days    |
 
 ---
 
@@ -842,6 +867,7 @@ async def get_sprint_report():
 ✅ **Small to medium teams**, want to reduce adoption cost
 
 **Typical examples:**
+
 - Backend for enterprise management systems
 - BFF layer for mobile apps
 - Backend API for data dashboards
@@ -912,6 +938,7 @@ config_global_resolver(diagram)
 #### 1. **Single Source of Truth**
 
 **Without ERD (traditional approach or GraphQL):**
+
 ```python
 # Every view needs to repeat relationship definitions
 class TaskResponse1(BaseModel):
@@ -936,6 +963,7 @@ class TaskResponse3(BaseModel):
 ```
 
 **With ERD:**
+
 ```python
 # Define relationship once
 class TaskEntity(BaseModel, BaseEntity):
@@ -971,6 +999,7 @@ app.mount('/voyager', create_voyager(
 ```
 
 **Value:**
+
 - 📊 **At a glance**: See all entities and their relationships
 - 🔍 **Quick navigation**: Click entities to jump to definitions
 - 🎨 **Color coding**: Distinguish resolve, post, expose operations
@@ -988,6 +1017,7 @@ class TaskResponse(BaseModel):
 ```
 
 **Advantages:**
+
 - ✅ No need to write resolve methods manually
 - ✅ Relationship definition reuse, avoid repeating loader calls
 - ✅ Cleaner code
@@ -1020,6 +1050,7 @@ class ItemEntity(BaseModel, BaseEntity):
 ```
 
 **Value:**
+
 - 🎯 **Clear business modeling**: Relationship definitions align with business model
 - 📐 **Better architecture**: Forces thinking about business relationships between entities
 - 🔒 **Avoid ad-hoc composition**: Reduces "hardcoding relationships for specific endpoints"
@@ -1060,26 +1091,28 @@ class TaskResponse(BaseModel):
 ```
 
 **Value:**
+
 - ✅ **Clear change scope**: relationship definitions centralized, impact scope clear
 - ✅ **Runtime checking**: using non-existent relationships immediately errors, won't silently fail
 - ✅ **Easier regression testing**: test coverage exposes issues during development
 
 ### GraphQL vs pydantic-resolve ERD
 
-| Dimension | GraphQL | pydantic-resolve ERD |
-|-----------|---------|---------------------|
+| Dimension                            | GraphQL                    | pydantic-resolve ERD              |
+| ------------------------------------ | -------------------------- | --------------------------------- |
 | **Relationship definition location** | Scattered in each Resolver | Centralized in entity definitions |
-| **Relationship reuse** | Re-declared for each query | Define once, reuse everywhere |
-| **Visualization** | Need additional tools | fastapi-voyager auto-generates |
-| **Declaration syntax** | Manual Resolver | LoadBy simplifies declaration |
-| **Refactoring safety** | Easy to miss | Centralized + Runtime checking |
-| **Business modeling** | Query-driven | Model-driven |
+| **Relationship reuse**               | Re-declared for each query | Define once, reuse everywhere     |
+| **Visualization**                    | Need additional tools      | fastapi-voyager auto-generates    |
+| **Declaration syntax**               | Manual Resolver            | LoadBy simplifies declaration     |
+| **Refactoring safety**               | Easy to miss               | Centralized + Runtime checking    |
+| **Business modeling**                | Query-driven               | Model-driven                      |
 
 ### Real-World Case: Refactoring a Team Management System
 
 Suppose you need to refactor a team management system, changing "task owner" from a single user to multiple users:
 
 **Using GraphQL:**
+
 ```python
 # 1. Modify Schema
 type Task {
@@ -1101,6 +1134,7 @@ class Task:
 ```
 
 **Using pydantic-resolve ERD:**
+
 ```python
 # 1. Modify entity relationship
 class TaskEntity(BaseModel, BaseEntity):
@@ -1134,15 +1168,18 @@ class TaskResponse(BaseModel):
 As the project evolves, ERD's value becomes more apparent:
 
 **Early project (1-3 months):**
+
 - Entity relationships are simple, ERD advantages not obvious
 - Might feel like "writing definitions twice"
 
 **Mid project (3-12 months):**
+
 - Entity count increases, relationships become complex
 - ERD's unified management starts to show value
 - When adding new views, directly reuse ERD definitions
 
 **Long-term project (12+ months):**
+
 - ERD provides safety net during business refactoring
 - New members quickly understand business model through ERD
 - fastapi-voyager visualization becomes architecture documentation

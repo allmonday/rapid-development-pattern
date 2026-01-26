@@ -161,6 +161,7 @@ async def get_stories_with_detail(session: AsyncSession = Depends(db.get_session
 ## Run code
 
 OpenAPI, aka Swagger
+
 ```shell
 python -m venv venv
 source venv/bin/activate
@@ -172,6 +173,7 @@ uvicorn src.main:app --port=8000 --reload
 You can execute it in swagger to view the return value of each API
 
 with UI
+
 ```shell
 python -m venv venv
 source venv/bin/activate
@@ -188,7 +190,6 @@ npm run dev
 
 or visit the interactive UI.
 
-
 ## Features & Scenarios
 
 - [Example 1: Construction of multi-layer nested structures](./src/router/sample_1/readme-en.md)
@@ -202,7 +203,6 @@ or visit the interactive UI.
 - [Compare to GraphQL wip](./resolve-vs-graphql-en.md)
 - generating ts-sdk by openapi-typescirpt-codegen wip
 
-
 ## Bonus
 
 ```shell
@@ -215,4 +215,3 @@ install `Graphviz Interactive Preview (Visual Studio Code Extension)` in vscode
 open `router-viz.dot` then you can explore your project.
 
 ![](./map.png)
-

@@ -30,10 +30,10 @@ async def get_step_1_tasks(session: AsyncSession = Depends(db.get_session)):
 
 通过引入 `src.services.user.query` 和 `src.services.task.query` 中的查询,返回了 `list[orm]` 对象, 然后 FastAPI 会自动将对象转成 response_model 中对应的类型.
 
-访问 
+访问
+
 - `http://localhost:8000/sample_1/users`
 - `http://localhost:8000/sample_1/tasks`
-
 
 ## 构建嵌套列表
 
@@ -62,7 +62,6 @@ class Sample1TaskDetail(ts.Task):
 
 loader 的作用是收集完所有task需要查询的 `task.owner_id`, 一次性查询完之后赋值给各自的 task
 
-
 在 `router.py` 中, 依然是通过 `tq.get_tasks(session)` 来获取初始数据, 将数据转换成 `Sample1TaskDetail`. 之后交给 `Resolver` 就能 resolve 出所有 user 信息.
 
 ```python
@@ -76,36 +75,37 @@ async def get_tasks_with_detail(session: AsyncSession = Depends(db.get_session))
 ```
 
 访问:
+
 - `http://localhost:8000/sample_1/tasks-with-detail`
 
 可以看到 user 信息被添加了进来.
+
 ```json
 [
-    {
-        "id": 1,
-        "name": "mvp tech design",
-        "owner_id": 2,
-        "story_id": 1,
-        "user": {
-            "id": 2,
-            "name": "Eric",
-            "level": "junior"
-        }
-    },
-    {
-        "id": 2,
-        "name": "implementation",
-        "owner_id": 2,
-        "story_id": 1,
-        "user": {
-            "id": 2,
-            "name": "Eric",
-            "level": "junior"
-        }
+  {
+    "id": 1,
+    "name": "mvp tech design",
+    "owner_id": 2,
+    "story_id": 1,
+    "user": {
+      "id": 2,
+      "name": "Eric",
+      "level": "junior"
     }
+  },
+  {
+    "id": 2,
+    "name": "implementation",
+    "owner_id": 2,
+    "story_id": 1,
+    "user": {
+      "id": 2,
+      "name": "Eric",
+      "level": "junior"
+    }
+  }
 ]
 ```
-
 
 ## 多层嵌套列表
 
@@ -132,7 +132,6 @@ class Sample1TeamDetail(tms.Team):
 ```
 
 访问: `http://localhost:8000/sample_1/teams-with-detail`
-
 
 ### 另一种数据加载情景
 
@@ -167,12 +166,12 @@ teams = [{
 }]
 ```
 
-转换类型, 可以看到此处没有 `resolve_sprints`(由根数据提供).  sprints 数据转换成 `Simple1SprintDetail` 类型之后, 会自动继续扩展获取定义的关联类型.
+转换类型, 可以看到此处没有 `resolve_sprints`(由根数据提供). sprints 数据转换成 `Simple1SprintDetail` 类型之后, 会自动继续扩展获取定义的关联类型.
 
 ```python
 class Sample1TeamDetail2(tms.Team):
     sprints: list[Sample1SprintDetail]  # no resolver, no default
-    
+
     members: list[us.User] = []
     def resolve_members(self, loader=LoaderDepend(ul.team_to_user_loader)):
         return loader.load(self.id)
@@ -183,7 +182,6 @@ class Sample1TeamDetail2(tms.Team):
 > 因此你可以根据输入的数据做定制, 找到最简洁的扩展方式
 >
 > pydantic-resolve 不会去考虑 ORM model 和 schema 直接是否统需要一声明的问题, 因为 ORM 层面向的持久层和pydantic schema 面向的业务层并不能保证一致.
-
 
 ## Dataloader 的使用
 
@@ -260,22 +258,20 @@ class Sample1TeamDetail(tms.Team):
 
 至此， Dataloader 的使用介绍完毕.
 
-
 ## 聊聊DataLoader
 
 对于使用过 `graphene` 或者 `strawberry` 之类 graphql 框架的开发, dataloader 是一个很熟悉的东西.
 
 在GraphQL 的模式下, 添加loader 需要将所有要使用的 loader 放到一个公共 context 里面, 这个问题受制于 GraphQL 单一入口, 所以没有好的解决方法.
- 
+
 - https://github.com/syrusakbary/aiodataloader?tab=readme-ov-file#creating-a-new-dataloader-per-request
 - https://strawberry.rocks/docs/guides/dataloaders#usage-with-context
 - https://www.apollographql.com/docs/apollo-server/data/fetching-data/#adding-data-sources-to-your-context-function
-
 
 这间接导致, 如果一个 loader 在多处被使用了, 那么对这个loader 的修改就会很困难. ( 因为 Query 太全能, 一个系统被全局关联了, 反而导致修改很困难 )
 
 因此 `pydantic-resolve` 利用 Resolver 提供的单独入口, 实现了通过 `LoaderDepend` 就近申明 loader 的功能
 
-这样一来 Resolver 就能按需来生成各个 loader 实例. loader 之间的替换修改就非常容易. 而且也不用把所有 loader 往一个 context 里面放了. 
+这样一来 Resolver 就能按需来生成各个 loader 实例. loader 之间的替换修改就非常容易. 而且也不用把所有 loader 往一个 context 里面放了.
 
 在 `pydantic-resolve` 中, loader 们彻底自由了, 开发可以随心所欲定制各种loader 而不用担心任何全局管理问题.

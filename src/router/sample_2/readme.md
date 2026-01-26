@@ -10,10 +10,9 @@ router-viz -m src.main  --model_prefixs src.servicesls --tags sample_2 --show_fi
 
 考虑这么一种场景, 需要列出 Team 中 level 为 senior (或者其他值) 的 members, 那么 loader 需要提供添加过滤条件的手段.
 
-我们可以这么做, 在 `src.services.user.loader` 中添加 `UserByLevelLoader`, 它有一个类属性 `level`. 
+我们可以这么做, 在 `src.services.user.loader` 中添加 `UserByLevelLoader`, 它有一个类属性 `level`.
 
 在初始化 loader 之后, 通过设置 `self.level` 就能实现功能
-
 
 ```python
 loader = UserByLevelLoader()
@@ -21,7 +20,6 @@ loader.level = 'senior'
 ```
 
 于是问题是如何在Resolver中为 `self.level` 赋值.
-
 
 ```python
 
@@ -94,7 +92,6 @@ class Sample2TeamDetailMultipleLevel(tms.Team):
 >
 > 这种情况下， loader_j 和 loader_s 的 batch 会分两批执行。
 
-
 ```python
 # router.py
 @route.get('/teams-with-detail-of-multiple-level', response_model=List[Sample2TeamDetail])
@@ -127,6 +124,7 @@ await Resolver(loader_filters={
 ```
 
 可以简化成
+
 ```python
 await Resolver(
     global_loader_filter={'level': 'senior'},
