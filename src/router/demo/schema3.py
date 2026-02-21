@@ -1,5 +1,5 @@
 from typing import Optional, Annotated
-from pydantic_resolve import DefineSubset, LoadBy, SubsetConfig
+from pydantic_resolve import DefineSubset, LoadBy, SubsetConfig, serialization
 from src.services.story.schema import Story as BaseStory
 
 from src.services.task.schema import Task as BaseTask
@@ -14,6 +14,7 @@ class Task3(BaseTask):
     def post_fullname(self, ancestor_context):  # Access story.name from parent context
         return f'{ancestor_context["story_name"]} - {self.name}'
 
+@serialization
 class Story3(DefineSubset):
     __subset__ = SubsetConfig(
         kls=BaseStory,

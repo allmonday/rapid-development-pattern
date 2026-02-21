@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import Optional, Annotated
-from pydantic_resolve import ICollector, LoadBy
+from pydantic_resolve import ICollector, LoadBy, serialization
 import src.services.story.schema as ss
 import src.services.task.schema as ts
 import src.services.user.schema as us
@@ -19,6 +19,7 @@ class CntCollector(ICollector):
     def values(self):
         return self.counter
 
+@serialization
 class Sample4TeamDetail(tms.Team):
     sprints: Annotated[list[Sample4SprintDetail], LoadBy('id')] = []
 

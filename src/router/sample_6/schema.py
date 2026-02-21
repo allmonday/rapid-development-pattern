@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic_resolve import Loader, DefineSubset, SubsetConfig
+from pydantic_resolve import Loader, DefineSubset, SubsetConfig, serialization
 from pydantic import BaseModel,  Field
 import src.db as db
 
@@ -70,6 +70,7 @@ class Sample6TeamDetail(DefineSubset):
     def resolve_sprints(self, loader=Loader(spl.team_to_sprint_loader)):
         return loader.load(self.id)
     
+@serialization
 class Sample6Root(BaseModel):
     summary: str
     teams: list[Sample6TeamDetail] = [] 

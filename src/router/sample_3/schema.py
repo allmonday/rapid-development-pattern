@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic_resolve import Loader, SubsetConfig, DefineSubset
+from pydantic_resolve import Loader, SubsetConfig, DefineSubset, serialization
 from typing import Dict
 
 import src.services.task.loader as tl
@@ -17,7 +17,7 @@ class Sample3TaskDetail(ts.Task):
     user: Optional[us.User] = None
     def resolve_user(self, loader=Loader(ul.user_batch_loader)):
         return loader.load(self.owner_id)
-    
+
     full_name: str = ''
     def resolve_full_name(self, ancestor_context: Dict):
         team = ancestor_context['team_name']
@@ -46,6 +46,7 @@ class Sample3SprintDetail(DefineSubset):
     def resolve_stories(self, loader=Loader(sl.sprint_to_story_loader)):
         return loader.load(self.id)
 
+@serialization
 class Sample3TeamDetail(DefineSubset):
     __subset__ = SubsetConfig(
         kls=tms.Team,

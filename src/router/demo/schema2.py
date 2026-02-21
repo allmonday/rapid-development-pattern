@@ -3,12 +3,14 @@ from pydantic_resolve import DefineSubset, LoadBy
 from src.services.story.schema import Story as BaseStory
 from src.services.task.schema import Task as BaseTask
 from src.services.user.schema import User as BaseUser
+from pydantic_resolve import serialization
 
 
 # post case 1
 class Task2(BaseTask):
     user: Annotated[Optional[BaseUser], LoadBy('owner_id')] = None
 
+@serialization
 class Story2(DefineSubset):
     __pydantic_resolve_subset__ = (BaseStory, ('id', 'name', 'owner_id'))
 

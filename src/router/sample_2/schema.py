@@ -1,11 +1,12 @@
 from typing import List
-from pydantic_resolve import Loader
+from pydantic_resolve import Loader, serialization
 
 import src.services.user.loader as ul
 
 import src.services.user.schema as us
 import src.services.team.schema as tms
 
+@serialization
 class Sample2TeamDetail(tms.Team):
     senior_members: list[us.User] = []
     def resolve_senior_members(self, loader=Loader(ul.UserByLevelLoader)):
@@ -18,6 +19,7 @@ SeniorMemberLoader = copy_class('SeniorMemberLoader', ul.UserByLevelLoader)
 JuniorMemberLoader = copy_class('JuniorMemberLoader', ul.UserByLevelLoader)
 
 
+@serialization
 class Sample2TeamDetailMultipleLevel(tms.Team):
     senior_members: list[us.User] = []
     def resolve_senior_members(self, loader=Loader(SeniorMemberLoader)):
