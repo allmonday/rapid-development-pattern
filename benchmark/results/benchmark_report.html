@@ -1,0 +1,442 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benchmark Report: pydantic-resolve vs Strawberry GraphQL</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #2196F3;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 30px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+        }
+        .summary {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .chart-container img {
+            max-width: 100%;
+            height: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 14px;
+        }
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #2196F3;
+            color: white;
+            font-weight: 600;
+        }
+        tr:hover { background: #f9f9f9; }
+        tr:nth-child(even) { background: #fafafa; }
+        tr:nth-child(even):hover { background: #f5f5f5; }
+        .better { color: #4CAF50; font-weight: bold; }
+        .worse { color: #F44336; }
+        .metric-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .metric-card {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .metric-card h3 {
+            margin: 0 0 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .metric-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Benchmark Report</h1>
+    <p><strong>pydantic-resolve</strong> vs <strong>Strawberry GraphQL</strong> Performance Comparison</p>
+    <p>Generated: 2026-03-01 21:53:17</p>
+
+    <div class="summary">
+        <h2>Executive Summary</h2>
+        <div class="metric-group">
+            <div class="metric-card">
+                <h3>Total Tests</h3>
+                <div class="value">10</div>
+            </div>
+            <div class="metric-card">
+                <h3>Iterations per Test</h3>
+                <div class="value">50</div>
+            </div>
+            <div class="metric-card">
+                <h3>pydantic-resolve Wins</h3>
+                <div class="value">10</div>
+            </div>
+            <div class="metric-card">
+                <h3>Strawberry Wins</h3>
+                <div class="value">0</div>
+            </div>
+        </div>
+
+        <h3>Test Environment</h3>
+        <ul>
+            <li>Database: SQLite + aiosqlite</li>
+            <li>ORM: SQLAlchemy 2.0</li>
+            <li>pydantic-resolve DataLoader: aiodataloader</li>
+            <li>Strawberry DataLoader: strawberry.dataloader</li>
+        </ul>
+    </div>
+
+    <h2>Response Time Comparison</h2>
+    <div class="chart-container">
+        <img src="charts/response_time_comparison.png" alt="Response Time Comparison">
+    </div>
+
+    <h2>Performance Ratio</h2>
+    <div class="chart-container">
+        <img src="charts/performance_ratio.png" alt="Performance Ratio">
+        <p><em>Ratio &lt; 1 means pydantic-resolve is faster, &gt; 1 means Strawberry is faster</em></p>
+    </div>
+
+    <h2>Memory Usage</h2>
+    <div class="chart-container">
+        <img src="charts/memory_usage.png" alt="Memory Usage">
+    </div>
+
+    
+    <h2>Throughput vs Concurrency</h2>
+    <div class="chart-container">
+        <img src="charts/throughput.png" alt="Throughput">
+    </div>
+    
+
+    <h2>Detailed Results</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Query</th>
+                <th>Implementation</th>
+                <th>Mean (ms)</th>
+                <th>Median (ms)</th>
+                <th>P95 (ms)</th>
+                <th>P99 (ms)</th>
+                <th>Memory (MB)</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            <tr>
+                <td><code>concurrent_10</code></td>
+                <td>pydantic-resolve</td>
+                <td>98.67</td>
+                <td>94.34</td>
+                <td>122.18</td>
+                <td>125.05</td>
+                <td>0.22</td>
+            </tr>
+            
+            <tr>
+                <td><code>concurrent_10</code></td>
+                <td>strawberry</td>
+                <td>111.38</td>
+                <td>111.29</td>
+                <td>139.64</td>
+                <td>143.17</td>
+                <td>0.25</td>
+            </tr>
+            
+            <tr>
+                <td><code>concurrent_100</code></td>
+                <td>pydantic-resolve</td>
+                <td>1194.02</td>
+                <td>1195.34</td>
+                <td>1299.33</td>
+                <td>1321.33</td>
+                <td>0.23</td>
+            </tr>
+            
+            <tr>
+                <td><code>concurrent_100</code></td>
+                <td>strawberry</td>
+                <td>1367.83</td>
+                <td>1368.73</td>
+                <td>1594.84</td>
+                <td>1712.90</td>
+                <td>0.25</td>
+            </tr>
+            
+            <tr>
+                <td><code>concurrent_50</code></td>
+                <td>pydantic-resolve</td>
+                <td>558.14</td>
+                <td>547.57</td>
+                <td>659.59</td>
+                <td>674.50</td>
+                <td>0.22</td>
+            </tr>
+            
+            <tr>
+                <td><code>concurrent_50</code></td>
+                <td>strawberry</td>
+                <td>643.63</td>
+                <td>643.08</td>
+                <td>744.26</td>
+                <td>792.89</td>
+                <td>0.25</td>
+            </tr>
+            
+            <tr>
+                <td><code>nested_2_layers</code></td>
+                <td>pydantic-resolve</td>
+                <td>4.80</td>
+                <td>4.76</td>
+                <td>5.02</td>
+                <td>5.16</td>
+                <td>0.08</td>
+            </tr>
+            
+            <tr>
+                <td><code>nested_2_layers</code></td>
+                <td>strawberry</td>
+                <td>5.81</td>
+                <td>5.82</td>
+                <td>5.97</td>
+                <td>6.07</td>
+                <td>0.12</td>
+            </tr>
+            
+            <tr>
+                <td><code>nested_3_layers</code></td>
+                <td>pydantic-resolve</td>
+                <td>7.39</td>
+                <td>7.36</td>
+                <td>7.58</td>
+                <td>7.74</td>
+                <td>0.14</td>
+            </tr>
+            
+            <tr>
+                <td><code>nested_3_layers</code></td>
+                <td>strawberry</td>
+                <td>8.66</td>
+                <td>8.68</td>
+                <td>8.86</td>
+                <td>9.03</td>
+                <td>0.18</td>
+            </tr>
+            
+            <tr>
+                <td><code>nested_4_layers_with_owners</code></td>
+                <td>pydantic-resolve</td>
+                <td>11.30</td>
+                <td>11.31</td>
+                <td>11.50</td>
+                <td>11.60</td>
+                <td>0.20</td>
+            </tr>
+            
+            <tr>
+                <td><code>nested_4_layers_with_owners</code></td>
+                <td>strawberry</td>
+                <td>13.35</td>
+                <td>12.97</td>
+                <td>13.33</td>
+                <td>32.47</td>
+                <td>0.24</td>
+            </tr>
+            
+            <tr>
+                <td><code>one_to_many_team_sprints</code></td>
+                <td>pydantic-resolve</td>
+                <td>2.82</td>
+                <td>2.79</td>
+                <td>3.00</td>
+                <td>3.10</td>
+                <td>0.05</td>
+            </tr>
+            
+            <tr>
+                <td><code>one_to_many_team_sprints</code></td>
+                <td>strawberry</td>
+                <td>3.88</td>
+                <td>3.86</td>
+                <td>4.13</td>
+                <td>4.14</td>
+                <td>0.09</td>
+            </tr>
+            
+            <tr>
+                <td><code>one_to_many_team_users</code></td>
+                <td>pydantic-resolve</td>
+                <td>2.96</td>
+                <td>2.93</td>
+                <td>3.11</td>
+                <td>3.14</td>
+                <td>0.05</td>
+            </tr>
+            
+            <tr>
+                <td><code>one_to_many_team_users</code></td>
+                <td>strawberry</td>
+                <td>4.04</td>
+                <td>4.03</td>
+                <td>4.18</td>
+                <td>4.29</td>
+                <td>0.09</td>
+            </tr>
+            
+            <tr>
+                <td><code>one_to_one_task_owner</code></td>
+                <td>pydantic-resolve</td>
+                <td>4.15</td>
+                <td>4.10</td>
+                <td>4.49</td>
+                <td>4.74</td>
+                <td>0.08</td>
+            </tr>
+            
+            <tr>
+                <td><code>one_to_one_task_owner</code></td>
+                <td>strawberry</td>
+                <td>4.85</td>
+                <td>4.82</td>
+                <td>5.02</td>
+                <td>5.10</td>
+                <td>0.12</td>
+            </tr>
+            
+            <tr>
+                <td><code>simple_sprints</code></td>
+                <td>pydantic-resolve</td>
+                <td>1.53</td>
+                <td>1.51</td>
+                <td>1.62</td>
+                <td>2.07</td>
+                <td>0.03</td>
+            </tr>
+            
+            <tr>
+                <td><code>simple_sprints</code></td>
+                <td>strawberry</td>
+                <td>2.33</td>
+                <td>2.30</td>
+                <td>2.46</td>
+                <td>2.91</td>
+                <td>0.08</td>
+            </tr>
+            
+            <tr>
+                <td><code>simple_teams</code></td>
+                <td>pydantic-resolve</td>
+                <td>1.20</td>
+                <td>1.19</td>
+                <td>1.29</td>
+                <td>1.39</td>
+                <td>0.03</td>
+            </tr>
+            
+            <tr>
+                <td><code>simple_teams</code></td>
+                <td>strawberry</td>
+                <td>2.04</td>
+                <td>2.02</td>
+                <td>2.16</td>
+                <td>2.55</td>
+                <td>0.08</td>
+            </tr>
+            
+            <tr>
+                <td><code>simple_users</code></td>
+                <td>pydantic-resolve</td>
+                <td>1.57</td>
+                <td>1.54</td>
+                <td>1.67</td>
+                <td>1.78</td>
+                <td>0.03</td>
+            </tr>
+            
+            <tr>
+                <td><code>simple_users</code></td>
+                <td>strawberry</td>
+                <td>2.85</td>
+                <td>2.35</td>
+                <td>2.83</td>
+                <td>25.46</td>
+                <td>0.08</td>
+            </tr>
+            
+            <tr>
+                <td><code>sprint_with_stories_and_tasks</code></td>
+                <td>pydantic-resolve</td>
+                <td>7.63</td>
+                <td>7.64</td>
+                <td>7.82</td>
+                <td>7.94</td>
+                <td>0.15</td>
+            </tr>
+            
+            <tr>
+                <td><code>sprint_with_stories_and_tasks</code></td>
+                <td>strawberry</td>
+                <td>8.86</td>
+                <td>8.86</td>
+                <td>9.13</td>
+                <td>9.34</td>
+                <td>0.21</td>
+            </tr>
+            
+        </tbody>
+    </table>
+
+    <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666;">
+        <p>Generated by pydantic-resolve GraphQL Benchmark Tool</p>
+    </footer>
+</body>
+</html>
