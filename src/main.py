@@ -153,8 +153,6 @@ async def graphql_endpoint(req: GraphQLRequest):
     """GraphQL query endpoint"""
     return await graphql_handler.execute(
         query=req.query,
-        variables=req.variables,
-        operation_name=req.operation_name
     )
 
 
