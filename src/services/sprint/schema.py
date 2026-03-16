@@ -18,27 +18,27 @@ class Sprint(BaseModel, BaseEntity):
     status: str
     team_id: int
 
-    @query(name='get_sprints')
+    @query
     async def get_sprints(cls) -> list['Sprint']:
         async with async_session() as session:
             sprints = await get_sprints_query(session)
             return [Sprint.model_validate(sprint) for sprint in sprints]
 
     # Mutation methods - Sprint 自身负责更新
-    @mutation(name='updateSprint')
+    @mutation
     async def update_sprint(cls, id: int, name: Optional[str] = None, status: Optional[str] = None) -> Optional['Sprint']:
         async with async_session() as session:
             sprint = await sprint_mutation.update_sprint(session, id, name, status)
             return Sprint.model_validate(sprint) if sprint else None
 
     # Mutation methods - 管理 Story 子实体
-    @mutation(name='createStory')
+    @mutation
     async def create_story(cls, sprint_id: int, name: str, owner_id: int) -> story_schema.Story:
         async with async_session() as session:
             story = await sprint_mutation.create_story(session, sprint_id, name, owner_id)
             return story_schema.Story.model_validate(story)
 
-    @mutation(name='deleteStory')
+    @mutation
     async def delete_story(cls, id: int) -> bool:
         async with async_session() as session:
             return await sprint_mutation.delete_story(session, id)

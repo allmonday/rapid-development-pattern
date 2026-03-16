@@ -19,14 +19,14 @@ class Task(BaseModel, BaseEntity):
     story_id: int
     estimate: int
 
-    @query(name='get_tasks')
+    @query
     async def get_tasks(cls) -> list['Task']:
         async with async_session() as session:
             tasks = await get_tasks_query(session)
             return [Task.model_validate(task) for task in tasks]
 
     # Mutation methods - Task 自身负责更新
-    @mutation(name='updateTask')
+    @mutation
     async def update_task(cls, id: int, name: Optional[str] = None, owner_id: Optional[int] = None, estimate: Optional[int] = None) -> Optional['Task']:
         async with async_session() as session:
             task = await task_mutation.update_task(session, id, name, owner_id, estimate)

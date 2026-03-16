@@ -4,7 +4,7 @@ from fastapi.routing import APIRoute
 from fastapi.responses import PlainTextResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import src.db as db
 import src.router.sample_1.router as s1_router
 import src.router.sample_2.router as s2_router
@@ -18,6 +18,7 @@ from fastapi_voyager import create_voyager
 from src.services.er_diagram import BaseEntity
 from pydantic_resolve import config_global_resolver
 from pydantic_resolve.graphql import GraphQLHandler, SchemaBuilder
+from pydantic_resolve.graphql.mcp import create_mcp_server, AppConfig
 
 diagram = BaseEntity.get_diagram()
 
@@ -26,6 +27,20 @@ config_global_resolver(diagram)
 # GraphQL handler and schema builder
 graphql_handler = GraphQLHandler(diagram, enable_from_attribute_in_type_adapter=True)
 graphql_schema_builder = SchemaBuilder(diagram)
+
+# MCP Server configuration
+mcp_apps: List[AppConfig] = [
+    AppConfig(
+        name="task_management",
+        er_diagram=diagram,
+        description="Task management system with users, teams, sprints, stories and tasks. "
+                    "Supports GraphQL queries and mutations for all entities.",
+        enable_from_attribute_in_type_adapter=True,
+    )
+]
+
+# Create MCP server
+mcp = create_mcp_server(apps=mcp_apps, name="Task Management GraphQL MCP Server")
 
 async def startup():
     print('start')
@@ -162,17 +177,23 @@ async def graphql_schema():
     return graphql_schema_builder.build_schema()
 
 
-app.mount('/voyager', 
+app.mount('/voyager',
           create_voyager(
-            app, 
+            app,
             er_diagram=diagram,
-            module_color={'src.services': 'purple'}, 
-            module_prefix='src.services', 
+            module_color={'src.services': 'purple'},
+            module_prefix='src.services',
             swagger_url="/docs",
             ga_id="G-R64S7Q49VL",
             initial_page_policy='first',
             online_repo_url='https://github.com/allmonday/composition-oriented-development-pattern/blob/master',
             enable_pydantic_resolve_meta=True))
+
+
+# Mount MCP SSE server
+# SSE endpoint: http://localhost:8000/mcp/sse
+# Message endpoint: http://localhost:8000/mcp/message
+app.mount('/mcp', mcp.sse_app())
 
 
 def use_route_names_as_operation_ids(app: FastAPI) -> None:

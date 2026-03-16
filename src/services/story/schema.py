@@ -21,27 +21,27 @@ class Story(BaseModel, BaseEntity):
     owner_id: int
     sprint_id: int
 
-    @query(name='get_stories')
+    @query
     async def get_stories(cls) -> list['Story']:
         async with async_session() as session:
             stories = await get_stories_query(session)
             return [Story.model_validate(story) for story in stories]
 
     # Mutation methods - Story 自身负责更新
-    @mutation(name='updateStory')
+    @mutation
     async def update_story(cls, id: int, name: Optional[str] = None, owner_id: Optional[int] = None) -> Optional['Story']:
         async with async_session() as session:
             story = await story_mutation.update_story(session, id, name, owner_id)
             return Story.model_validate(story) if story else None
 
     # Mutation methods - 管理 Task 子实体
-    @mutation(name='createTask')
+    @mutation
     async def create_task(cls, story_id: int, name: str, owner_id: int, estimate: int = 0) -> task_schema.Task:
         async with async_session() as session:
             task = await story_mutation.create_task(session, story_id, name, owner_id, estimate)
             return task_schema.Task.model_validate(task)
 
-    @mutation(name='deleteTask')
+    @mutation
     async def delete_task(cls, id: int) -> bool:
         async with async_session() as session:
             return await story_mutation.delete_task(session, id)

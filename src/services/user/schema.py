@@ -12,25 +12,25 @@ class User(BaseModel, BaseEntity):
     name: str
     level: str
 
-    @query(name='get_users')
+    @query
     async def get_users(cls) -> list['User']:
         async with async_session() as session:
             users = await get_users_query(session)
             return [User.model_validate(user) for user in users]
 
-    @mutation(name='createUser')
+    @mutation
     async def create_user(cls, name: str, level: str = 'user') -> 'User':
         async with async_session() as session:
             user = await user_mutation.create_user(session, name, level)
             return User.model_validate(user)
 
-    @mutation(name='updateUser')
+    @mutation
     async def update_user(cls, id: int, name: Optional[str] = None, level: Optional[str] = None) -> Optional['User']:
         async with async_session() as session:
             user = await user_mutation.update_user(session, id, name, level)
             return User.model_validate(user) if user else None
 
-    @mutation(name='deleteUser')
+    @mutation
     async def delete_user(cls, id: int) -> bool:
         async with async_session() as session:
             return await user_mutation.delete_user(session, id)
