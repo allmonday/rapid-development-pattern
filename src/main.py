@@ -18,7 +18,11 @@ from fastapi_voyager import create_voyager
 from src.services.er_diagram import BaseEntity
 from pydantic_resolve import config_global_resolver
 from pydantic_resolve.graphql import GraphQLHandler, SchemaBuilder
-from pydantic_resolve.graphql.mcp import create_mcp_server, AppConfig
+from pydantic_resolve.graphql.mcp import AppConfig
+from pydantic_resolve.graphql.mcp.managers.multi_app_manager import MultiAppManager
+from pydantic_resolve.graphql.mcp.tools.multi_app_tools import register_multi_app_tools
+from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 diagram = BaseEntity.get_diagram()
 
@@ -39,8 +43,31 @@ mcp_apps: List[AppConfig] = [
     )
 ]
 
-# Create MCP server
-mcp = create_mcp_server(apps=mcp_apps, name="Task Management GraphQL MCP Server")
+# Configure transport security for production
+transport_security = TransportSecuritySettings(
+    enable_dns_rebinding_protection=True,
+    allowed_hosts=[
+        "www.fastapi-voyager.top",
+        "fastapi-voyager.top",
+        "www.fastapi-voyager.top:*",
+        "fastapi-voyager.top:*",
+        "localhost",
+        "localhost:*",
+        "127.0.0.1",
+        "127.0.0.1:*",
+    ],
+    allowed_origins=[
+        "https://www.fastapi-voyager.top",
+        "https://fastapi-voyager.top",
+        "http://localhost:*",
+        "http://127.0.0.1:*",
+    ],
+)
+
+# Create MCP server with transport security
+manager = MultiAppManager(mcp_apps)
+mcp = FastMCP("Task Management GraphQL MCP Server", transport_security=transport_security)
+register_multi_app_tools(mcp, manager)
 
 async def startup():
     print('start')
