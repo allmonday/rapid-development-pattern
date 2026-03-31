@@ -9,8 +9,8 @@ from .query import get_tasks as get_tasks_query
 from . import mutation as task_mutation
 
 class Task(BaseModel, BaseEntity):
-    __pydantic_resolve_relationships__ = [
-        Relationship( field='owner_id', target_kls=user_schema.User, loader=user_loader.user_batch_loader, default_field_name='owner'),
+    __relationships__ = [
+        Relationship( fk='owner_id', target=user_schema.User, loader=user_loader.user_batch_loader, name='owner'),
     ]
 
     id: int

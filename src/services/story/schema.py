@@ -11,9 +11,9 @@ from .query import get_stories as get_stories_query
 from . import mutation as story_mutation
 
 class Story(BaseModel, BaseEntity):
-    __pydantic_resolve_relationships__ = [
-        Relationship( field='id', target_kls=list[task_schema.Task], loader=task_loader.story_to_task_loader, default_field_name='tasks'),
-        Relationship( field='owner_id', target_kls=user_schema.User, loader=user_loader.user_batch_loader, default_field_name='owner'),
+    __relationships__ = [
+        Relationship( fk='id', target=list[task_schema.Task], loader=task_loader.story_to_task_loader, name='tasks'),
+        Relationship( fk='owner_id', target=user_schema.User, loader=user_loader.user_batch_loader, name='owner'),
     ]
 
     id: int

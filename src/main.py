@@ -14,7 +14,6 @@ import src.router.sample_5.router as s5_router
 import src.router.sample_6.router as s6_router
 import src.router.sample_7.router as s7_router
 import src.router.demo.router as demo_router
-from fastapi_voyager import create_voyager
 from src.services.er_diagram import BaseEntity
 from pydantic_resolve import config_global_resolver
 from pydantic_resolve.graphql import GraphQLHandler, SchemaBuilder
@@ -204,17 +203,18 @@ async def graphql_schema():
     return graphql_schema_builder.build_schema()
 
 
-app.mount('/voyager',
-          create_voyager(
-            app,
-            er_diagram=diagram,
-            module_color={'src.services': 'purple'},
-            module_prefix='src.services',
-            swagger_url="/docs",
-            ga_id="G-R64S7Q49VL",
-            initial_page_policy='first',
-            online_repo_url='https://github.com/allmonday/composition-oriented-development-pattern/blob/master',
-            enable_pydantic_resolve_meta=True))
+# TODO: re-enable after fastapi-voyager is updated for pydantic-resolve v4
+# app.mount('/voyager',
+#           create_voyager(
+#             app,
+#             er_diagram=diagram,
+#             module_color={'src.services': 'purple'},
+#             module_prefix='src.services',
+#             swagger_url="/docs",
+#             ga_id="G-R64S7Q49VL",
+#             initial_page_policy='first',
+#             online_repo_url='https://github.com/allmonday/composition-oriented-development-pattern/blob/master',
+#             enable_pydantic_resolve_meta=True))
 
 
 # Mount MCP SSE server

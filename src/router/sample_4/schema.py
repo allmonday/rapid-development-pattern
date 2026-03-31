@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from typing import Optional, Annotated
-from pydantic_resolve import ICollector, LoadBy, serialization
+from pydantic_resolve import ICollector, serialization
+from src.services.er_diagram import AutoLoad
 import src.services.story.schema as ss
 import src.services.task.schema as ts
 import src.services.user.schema as us
@@ -21,22 +22,22 @@ class CntCollector(ICollector):
 
 @serialization
 class Sample4TeamDetail(tms.Team):
-    sprints: Annotated[list[Sample4SprintDetail], LoadBy('id')] = []
+    sprints: Annotated[list[Sample4SprintDetail], AutoLoad()] = []
 
     task_count: int = 0
     def post_task_count(self):
         return sum([s.task_count for s in self.sprints])
-    
+
     total_task_count: int = 0
     def post_total_task_count(self, collector=CntCollector(alias='story_tasks')):
         return collector.values()
-    
+
     description: str = ''
     def post_default_handler(self):
-        self.description = f'team: "{self.name}" has {self.task_count} tasks in total.' 
+        self.description = f'team: "{self.name}" has {self.task_count} tasks in total.'
 
 class Sample4SprintDetail(sps.Sprint):
-    stories: Annotated[list[Sample4StoryDetail], LoadBy('id')] = []
+    stories: Annotated[list[Sample4StoryDetail], AutoLoad()] = []
 
     task_count: int = 0
     # task_count: int = Field(default=0, exclude=True)
@@ -46,12 +47,12 @@ class Sample4SprintDetail(sps.Sprint):
 class Sample4StoryDetail(ss.Story):
     __pydantic_resolve_collect__ = {'tasks': 'story_tasks'}
 
-    tasks: Annotated[list[Sample4TaskDetail], LoadBy('id')] = []
-    
+    tasks: Annotated[list[Sample4TaskDetail], AutoLoad()] = []
+
     task_count: int = 0
     # task_count: int = Field(default=0, exclude=True)
     def post_task_count(self):
         return len(self.tasks)
 
 class Sample4TaskDetail(ts.Task):
-    user: Annotated[Optional[us.User], LoadBy('owner_id')] = None
+    user: Annotated[Optional[us.User], AutoLoad(origin='owner')] = None

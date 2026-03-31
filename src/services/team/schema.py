@@ -11,9 +11,9 @@ from .query import get_teams as get_teams_query
 from . import mutation as team_mutation
 
 class Team(BaseModel, BaseEntity):
-    __pydantic_resolve_relationships__ = [
-        Relationship( field='id', target_kls=list[sprint_schema.Sprint], loader=sprint_loader.team_to_sprint_loader, default_field_name='sprints'),
-        Relationship( field='id', target_kls=list[user_schema.User], loader=user_loader.team_to_user_loader, default_field_name='users'),
+    __relationships__ = [
+        Relationship( fk='id', target=list[sprint_schema.Sprint], loader=sprint_loader.team_to_sprint_loader, name='sprints'),
+        Relationship( fk='id', target=list[user_schema.User], loader=user_loader.team_to_user_loader, name='users'),
     ]
 
     id: int

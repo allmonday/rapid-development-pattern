@@ -9,8 +9,8 @@ from .query import get_sprints as get_sprints_query
 from . import mutation as sprint_mutation
 
 class Sprint(BaseModel, BaseEntity):
-    __pydantic_resolve_relationships__ = [
-        Relationship( field='id', target_kls=list[story_schema.Story], loader=story_loader.sprint_to_story_loader, default_field_name='stories'),
+    __relationships__ = [
+        Relationship( fk='id', target=list[story_schema.Story], loader=story_loader.sprint_to_story_loader, name='stories'),
     ]
 
     id: int
