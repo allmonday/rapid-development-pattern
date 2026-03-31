@@ -17,11 +17,9 @@ import src.router.demo.router as demo_router
 from src.services.er_diagram import BaseEntity
 from pydantic_resolve import config_global_resolver
 from pydantic_resolve.graphql import GraphQLHandler, SchemaBuilder
-from pydantic_resolve.graphql.mcp import AppConfig
-from pydantic_resolve.graphql.mcp.managers.multi_app_manager import MultiAppManager
-from pydantic_resolve.graphql.mcp.tools.multi_app_tools import register_multi_app_tools
-from mcp.server.fastmcp import FastMCP
-from mcp.server.transport_security import TransportSecuritySettings
+from pydantic_resolve.graphql.mcp import create_mcp_server, AppConfig
+from fastmcp.utilities.lifespan import combine_lifespans
+from fastapi_voyager import create_voyager
 
 diagram = BaseEntity.get_diagram()
 
@@ -42,31 +40,8 @@ mcp_apps: List[AppConfig] = [
     )
 ]
 
-# Configure transport security for production
-transport_security = TransportSecuritySettings(
-    enable_dns_rebinding_protection=True,
-    allowed_hosts=[
-        "www.fastapi-voyager.top",
-        "fastapi-voyager.top",
-        "www.fastapi-voyager.top:*",
-        "fastapi-voyager.top:*",
-        "localhost",
-        "localhost:*",
-        "127.0.0.1",
-        "127.0.0.1:*",
-    ],
-    allowed_origins=[
-        "https://www.fastapi-voyager.top",
-        "https://fastapi-voyager.top",
-        "http://localhost:*",
-        "http://127.0.0.1:*",
-    ],
-)
-
-# Create MCP server with transport security
-manager = MultiAppManager(mcp_apps)
-mcp = FastMCP("Task Management GraphQL MCP Server", transport_security=transport_security)
-register_multi_app_tools(mcp, manager)
+mcp = create_mcp_server(apps=mcp_apps, name="Task Management GraphQL MCP Server")
+mcp_app = mcp.http_app(path='/')
 
 async def startup():
     print('start')
@@ -80,13 +55,14 @@ async def shutdown():
     print('end done')
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def db_lifespan(app: FastAPI):
     await startup()
     yield
     await shutdown()
 
+combined_lifespan = combine_lifespans(db_lifespan, mcp_app.lifespan)
 
-app = FastAPI(debug=True, lifespan=lifespan)
+app = FastAPI(debug=True, lifespan=combined_lifespan)
 
 # 添加 CORS 中间件
 app.add_middleware(
@@ -204,23 +180,22 @@ async def graphql_schema():
 
 
 # TODO: re-enable after fastapi-voyager is updated for pydantic-resolve v4
-# app.mount('/voyager',
-#           create_voyager(
-#             app,
-#             er_diagram=diagram,
-#             module_color={'src.services': 'purple'},
-#             module_prefix='src.services',
-#             swagger_url="/docs",
-#             ga_id="G-R64S7Q49VL",
-#             initial_page_policy='first',
-#             online_repo_url='https://github.com/allmonday/composition-oriented-development-pattern/blob/master',
-#             enable_pydantic_resolve_meta=True))
+app.mount('/voyager',
+          create_voyager(
+            app,
+            er_diagram=diagram,
+            module_color={'src.services': 'purple'},
+            module_prefix='src.services',
+            swagger_url="/docs",
+            ga_id="G-R64S7Q49VL",
+            initial_page_policy='first',
+            online_repo_url='https://github.com/allmonday/composition-oriented-development-pattern/blob/master',
+            enable_pydantic_resolve_meta=True))
 
 
-# Mount MCP SSE server
-# SSE endpoint: http://localhost:8000/mcp/sse
-# Message endpoint: http://localhost:8000/mcp/message
-app.mount('/mcp', mcp.sse_app())
+# Mount MCP server (Streamable HTTP)
+# MCP endpoint: http://localhost:8000/mcp/
+app.mount('/mcp', mcp_app)
 
 
 def use_route_names_as_operation_ids(app: FastAPI) -> None:
