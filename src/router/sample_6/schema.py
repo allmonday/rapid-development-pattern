@@ -1,18 +1,14 @@
-from typing import Optional
-from pydantic_resolve import Loader, DefineSubset, SubsetConfig, serialization
-from pydantic import BaseModel,  Field
+from typing import Optional, Annotated
+from pydantic_resolve import DefineSubset, SubsetConfig, serialization
+from pydantic import BaseModel, Field
 import src.db as db
-
-import src.services.task.loader as tl
-import src.services.user.loader as ul
-import src.services.story.loader as sl
-import src.services.sprint.loader as spl
 
 import src.services.story.schema as ss
 import src.services.task.schema as ts
 import src.services.user.schema as us
 import src.services.sprint.schema as sps
 import src.services.team.schema as tms
+from src.services.er_diagram import AutoLoad
 
 import src.services.team.query as tmq
 
@@ -25,14 +21,12 @@ class Sample6TaskDetail(DefineSubset):
     def post_name(self):
         return 'task name: ' + self.name
 
-    user: Optional[us.User] = None
-    def resolve_user(self, loader=Loader(ul.user_batch_loader)):
-        return loader.load(self.owner_id)
+    user: Annotated[Optional[us.User], AutoLoad(origin='owner')] = None
 
 
 class Sample6StoryDetail(DefineSubset):
     __subset__ = SubsetConfig(
-        kls=ss.Story, 
+        kls=ss.Story,
         fields=['name', 'id'],
         excluded_fields=['id']
     )
@@ -40,10 +34,8 @@ class Sample6StoryDetail(DefineSubset):
     def post_name(self):
         return 'story name: ' + self.name
 
-    tasks: list[Sample6TaskDetail] = Field(default_factory=list)
-    def resolve_tasks(self, loader=Loader(tl.story_to_task_loader)):
-        return loader.load(self.id)
-    
+    tasks: Annotated[list[Sample6TaskDetail], AutoLoad()] = []
+
 class Sample6SprintDetail(DefineSubset):
     __subset__ = SubsetConfig(
         kls=sps.Sprint,
@@ -53,27 +45,23 @@ class Sample6SprintDetail(DefineSubset):
     def post_name(self):
         return 'sprint name: ' + self.name
 
-    stories: list[Sample6StoryDetail] = []
-    def resolve_stories(self, loader=Loader(sl.sprint_to_story_loader)):
-        return loader.load(self.id)
+    stories: Annotated[list[Sample6StoryDetail], AutoLoad()] = []
 
 class Sample6TeamDetail(DefineSubset):
     __subset__ = SubsetConfig(
-        kls=tms.Team, 
+        kls=tms.Team,
         fields=['id', 'name'],
         excluded_fields=['id'])
 
     def post_name(self):
         return 'team name: ' + self.name
 
-    sprints: list[Sample6SprintDetail] = []
-    def resolve_sprints(self, loader=Loader(spl.team_to_sprint_loader)):
-        return loader.load(self.id)
-    
+    sprints: Annotated[list[Sample6SprintDetail], AutoLoad()] = []
+
 @serialization
 class Sample6Root(BaseModel):
     summary: str
-    teams: list[Sample6TeamDetail] = [] 
+    teams: list[Sample6TeamDetail] = []
     async def resolve_teams(self):
         async with db.async_session() as session:
             teams = await tmq.get_teams(session)

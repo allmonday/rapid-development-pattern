@@ -15,7 +15,7 @@ async def get_teams_with_detail(session: AsyncSession = Depends(db.get_session))
     """1.1 teams with senior members"""
     teams = await tmq.get_teams(session)
     teams = [Sample2TeamDetail.model_validate(t) for t in teams]
-    teams = await Resolver(loader_filters={
+    teams = await Resolver(loader_params={
         ul.UserByLevelLoader: {
             "level": 'senior'
         }
@@ -28,7 +28,7 @@ async def get_teams_with_detail_of_multiple_level(session: AsyncSession = Depend
     """1.2 teams with senior and junior members"""
     teams = await tmq.get_teams(session)
     teams = [Sample2TeamDetailMultipleLevel.model_validate(t) for t in teams]
-    teams = await Resolver(loader_filters={
+    teams = await Resolver(loader_params={
         SeniorMemberLoader: {
             "level": 'senior'
         },

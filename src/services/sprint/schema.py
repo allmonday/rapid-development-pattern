@@ -1,17 +1,14 @@
 from pydantic import BaseModel, ConfigDict
-from pydantic_resolve import Relationship, query, mutation
+from pydantic_resolve import query, mutation
 from typing import Optional
 import src.services.story.schema as story_schema
-import src.services.story.loader as story_loader
 from src.services.er_diagram import BaseEntity
 from src.db import async_session
 from .query import get_sprints as get_sprints_query
 from . import mutation as sprint_mutation
 
 class Sprint(BaseModel, BaseEntity):
-    __relationships__ = [
-        Relationship( fk='id', target=list[story_schema.Story], loader=story_loader.sprint_to_story_loader, name='stories'),
-    ]
+    __relationships__ = []
 
     id: int
     name: str

@@ -1,5 +1,14 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from .model import Base
+
+# Import all ORM models before mocks to ensure SQLAlchemy can resolve
+# forward references in relationship() declarations
+import src.services.user.model   # noqa: F401
+import src.services.team.model   # noqa: F401
+import src.services.sprint.model # noqa: F401
+import src.services.story.model  # noqa: F401
+import src.services.task.model   # noqa: F401
+
 import src.services.sprint.mock as sm
 import src.services.story.mock as stm
 import src.services.task.mock as tm

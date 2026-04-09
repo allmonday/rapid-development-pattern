@@ -6,7 +6,6 @@ from pydantic_resolve import Resolver
 import src.db as db
 from .schema import Sample3TeamDetail
 import src.services.team.query as tmq
-import src.services.user.loader as ul
 
 route = APIRouter(tags=['sample_3'], prefix="/sample_3")
 

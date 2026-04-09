@@ -1,17 +1,13 @@
 from pydantic import BaseModel, ConfigDict
 from src.services.er_diagram import BaseEntity
-from pydantic_resolve import Relationship, query, mutation
+from pydantic_resolve import query, mutation
 from typing import Optional
-import src.services.user.loader as user_loader
-import src.services.user.schema as user_schema
 from src.db import async_session
 from .query import get_tasks as get_tasks_query
 from . import mutation as task_mutation
 
 class Task(BaseModel, BaseEntity):
-    __relationships__ = [
-        Relationship( fk='owner_id', target=user_schema.User, loader=user_loader.user_batch_loader, name='owner'),
-    ]
+    __relationships__ = []
 
     id: int
     name: str

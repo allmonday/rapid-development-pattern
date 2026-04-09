@@ -6,6 +6,31 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 import src.db as db
+
+# 1. Import BaseEntity (triggers er_diagram.py, creates base_entity only)
+from src.services.er_diagram import BaseEntity
+
+# 2. Import entity schemas to trigger __init_subclass__ registration
+import src.services.user.schema   # noqa: F401
+import src.services.team.schema   # noqa: F401
+import src.services.sprint.schema # noqa: F401
+import src.services.story.schema  # noqa: F401
+import src.services.task.schema   # noqa: F401
+
+# 3. Build diagram + ORM integration + AutoLoad
+from src.services import er_diagram
+er_diagram.initialize()
+diagram = er_diagram.diagram
+
+from pydantic_resolve import config_global_resolver
+from pydantic_resolve.graphql import GraphQLHandler, SchemaBuilder
+from pydantic_resolve.graphql.mcp import create_mcp_server, AppConfig
+from fastmcp.utilities.lifespan import combine_lifespans
+from fastapi_voyager import create_voyager
+
+config_global_resolver(diagram)
+
+# 4. Now import routers (they use er_diagram.AutoLoad)
 import src.router.sample_1.router as s1_router
 import src.router.sample_2.router as s2_router
 import src.router.sample_3.router as s3_router
@@ -14,16 +39,6 @@ import src.router.sample_5.router as s5_router
 import src.router.sample_6.router as s6_router
 import src.router.sample_7.router as s7_router
 import src.router.demo.router as demo_router
-from src.services.er_diagram import BaseEntity
-from pydantic_resolve import config_global_resolver
-from pydantic_resolve.graphql import GraphQLHandler, SchemaBuilder
-from pydantic_resolve.graphql.mcp import create_mcp_server, AppConfig
-from fastmcp.utilities.lifespan import combine_lifespans
-from fastapi_voyager import create_voyager
-
-diagram = BaseEntity.get_diagram()
-
-config_global_resolver(diagram)
 
 # GraphQL handler and schema builder
 graphql_handler = GraphQLHandler(diagram, enable_from_attribute_in_type_adapter=True)

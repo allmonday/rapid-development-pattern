@@ -1,9 +1,6 @@
 from pydantic import BaseModel, ConfigDict
-from pydantic_resolve import Relationship, query, mutation
+from pydantic_resolve import query, mutation
 from typing import Optional
-import src.services.task.loader as task_loader
-import src.services.user.loader as user_loader
-import src.services.user.schema as user_schema
 import src.services.task.schema as task_schema
 from src.services.er_diagram import BaseEntity
 from src.db import async_session
@@ -11,10 +8,7 @@ from .query import get_stories as get_stories_query
 from . import mutation as story_mutation
 
 class Story(BaseModel, BaseEntity):
-    __relationships__ = [
-        Relationship( fk='id', target=list[task_schema.Task], loader=task_loader.story_to_task_loader, name='tasks'),
-        Relationship( fk='owner_id', target=user_schema.User, loader=user_loader.user_batch_loader, name='owner'),
-    ]
+    __relationships__ = []
 
     id: int
     name: str

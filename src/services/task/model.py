@@ -1,5 +1,5 @@
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey
 import src.db as db
 
 class Task(db.Base):
@@ -7,6 +7,8 @@ class Task(db.Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
-    owner_id: Mapped[int]
-    story_id: Mapped[int]
+    owner_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    story_id: Mapped[int] = mapped_column(ForeignKey("story.id"))
     estimate: Mapped[int]
+
+    owner: Mapped["User"] = relationship(lazy="noload")

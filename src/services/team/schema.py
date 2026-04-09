@@ -1,20 +1,14 @@
 from pydantic import BaseModel, ConfigDict
-from pydantic_resolve import Relationship, query, mutation
+from pydantic_resolve import query, mutation
 from typing import Optional
 import src.services.sprint.schema as sprint_schema
-import src.services.sprint.loader as sprint_loader
-import src.services.user.schema as user_schema
-import src.services.user.loader as user_loader
 from src.services.er_diagram import BaseEntity
 from src.db import async_session
 from .query import get_teams as get_teams_query
 from . import mutation as team_mutation
 
 class Team(BaseModel, BaseEntity):
-    __relationships__ = [
-        Relationship( fk='id', target=list[sprint_schema.Sprint], loader=sprint_loader.team_to_sprint_loader, name='sprints'),
-        Relationship( fk='id', target=list[user_schema.User], loader=user_loader.team_to_user_loader, name='users'),
-    ]
+    __relationships__ = []
 
     id: int
     name: str
