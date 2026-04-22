@@ -15,6 +15,6 @@ class Team(db.Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
 
-    sprints: Mapped[list["Sprint"]] = relationship(lazy="noload")
+    sprints: Mapped[list["Sprint"]] = relationship(lazy="noload", order_by="Sprint.id")
     users: Mapped[list["User"]] = relationship(
-        secondary=TeamUser.__table__, lazy="noload")
+        secondary=TeamUser.__table__, lazy="noload", order_by="User.id")

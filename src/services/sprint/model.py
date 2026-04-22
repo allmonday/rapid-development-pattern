@@ -10,4 +10,4 @@ class Sprint(db.Base):
     status: Mapped[str] = mapped_column(String(100))
     team_id: Mapped[int] = mapped_column(ForeignKey("team.id"))
 
-    stories: Mapped[list["Story"]] = relationship(lazy="noload")
+    stories: Mapped[list["Story"]] = relationship(lazy="noload", order_by="Story.id")

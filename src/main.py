@@ -41,7 +41,7 @@ import src.router.sample_7.router as s7_router
 import src.router.demo.router as demo_router
 
 # GraphQL handler and schema builder
-graphql_handler = GraphQLHandler(diagram, enable_from_attribute_in_type_adapter=True)
+graphql_handler = GraphQLHandler(diagram, enable_from_attribute_in_type_adapter=True, enable_pagination=True)
 graphql_schema_builder = SchemaBuilder(diagram)
 
 # MCP Server configuration

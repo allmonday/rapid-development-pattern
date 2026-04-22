@@ -7,9 +7,9 @@ SQLAlchemy==2.0.43
 uvicorn==0.35.0
 pytest==8.4.2
 greenlet==3.2.4
-fastapi-voyager==0.20.0
+fastapi-voyager==0.24.0
 pytest-asyncio==0.23.3
-pydantic-resolve[mcp]==5.0.0
+pydantic-resolve[mcp]==5.3.1
 
 # Benchmark dependencies
 strawberry-graphql[fastapi]>=0.287.0

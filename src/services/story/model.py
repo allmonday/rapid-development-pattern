@@ -10,5 +10,5 @@ class Story(db.Base):
     owner_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     sprint_id: Mapped[int] = mapped_column(ForeignKey("sprint.id"))
 
-    tasks: Mapped[list["Task"]] = relationship(lazy="noload")
+    tasks: Mapped[list["Task"]] = relationship(lazy="noload", order_by="Task.id")
     owner: Mapped["User"] = relationship(lazy="noload")
