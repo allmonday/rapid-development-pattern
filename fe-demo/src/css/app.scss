@@ -1,1 +1,75 @@
 // app global css in SCSS form
+
+// ── Nesting card system ──
+
+.root-card {
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 12px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+
+  .card-header {
+    padding: 10px 16px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .card-body {
+    padding: 12px 16px;
+  }
+}
+
+.child-nest {
+  margin: 0 16px 12px 0;
+  padding-left: 4%;
+  border-left: 2px solid #e2e8f0;
+}
+
+.child-nest .child-nest {
+  border-left-color: #cbd5e1;
+}
+
+.child-nest .child-nest .child-nest {
+  border-left-color: #94a3b8;
+}
+
+.nest-label {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  margin-top: 4px;
+}
+
+.child-card {
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 8px;
+  background: #fafbfc;
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .card-header {
+    padding: 8px 14px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .card-body {
+    padding: 8px 14px;
+  }
+}
+
+.child-nest .child-card {
+  background: #f6f8fa;
+}
+
+.child-nest .child-nest .child-card {
+  background: #f0f3f6;
+}
