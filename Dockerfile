@@ -1,20 +1,15 @@
-# 使用 Python 3.12 作为基础镜像
 FROM python:3.12-slim
 
-# 设置工作目录
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 WORKDIR /app
 
-# 复制依赖文件
-COPY requirement.txt .
+COPY pyproject.toml uv.lock .
 
-# 安装依赖
-RUN pip install --no-cache-dir -r requirement.txt
+RUN uv sync --frozen --no-dev --no-install-project
 
-# 复制项目文件
 COPY . .
 
-# 暴露端口
 EXPOSE 8000
 
-# 启动 uvicorn 服务
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+CMD ["uv", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

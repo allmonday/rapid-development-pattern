@@ -46,10 +46,8 @@ result = await Resolver().resolve(members)
 ### 运行项目
 
 ```shell
-python -m venv venv
-source venv/bin/activate
-pip install -r requirement.txt
-uvicorn src.main:app --port=8000 --reload
+uv sync
+uv run uvicorn src.main:app --port=8000 --reload
 # http://localhost:8000/docs
 # http://localhost:8000/voyager  # 交互式分析数据结构
 ```
