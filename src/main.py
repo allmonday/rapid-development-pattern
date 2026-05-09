@@ -25,6 +25,7 @@ diagram = er_diagram.diagram
 from pydantic_resolve import config_global_resolver
 from pydantic_resolve.graphql import GraphQLHandler, SchemaBuilder
 from pydantic_resolve.graphql.mcp import create_mcp_server, AppConfig
+from pydantic_resolve.use_case import UseCaseAppConfig, create_use_case_mcp_server
 from fastmcp.utilities.lifespan import combine_lifespans
 from fastapi_voyager import create_voyager
 
@@ -58,6 +59,32 @@ mcp_apps: List[AppConfig] = [
 mcp = create_mcp_server(apps=mcp_apps, name="Task Management GraphQL MCP Server")
 mcp_app = mcp.http_app(path='/')
 
+# UseCase MCP Server configuration
+from src.router.sample_1.service import Sample1Service
+from src.router.sample_2.service import Sample2Service
+from src.router.sample_3.service import Sample3Service
+from src.router.sample_4.service import Sample4Service
+from src.router.sample_5.service import Sample5Service
+from src.router.sample_6.service import Sample6Service
+from src.router.sample_7.service import Sample7Service
+from src.router.demo.service import DemoService
+
+use_case_mcp = create_use_case_mcp_server(
+    apps=[
+        UseCaseAppConfig(
+            name="task_management",
+            description="Task management use cases with various pydantic-resolve patterns.",
+            services=[
+                Sample1Service, Sample2Service, Sample3Service,
+                Sample4Service, Sample5Service, Sample6Service,
+                Sample7Service, DemoService,
+            ],
+        ),
+    ],
+    name="Task Management UseCase MCP Server",
+)
+use_case_mcp_app = use_case_mcp.http_app(path='/')
+
 async def startup():
     print('start')
     await db.init()
@@ -75,7 +102,7 @@ async def db_lifespan(app: FastAPI):
     yield
     await shutdown()
 
-combined_lifespan = combine_lifespans(db_lifespan, mcp_app.lifespan)
+combined_lifespan = combine_lifespans(db_lifespan, mcp_app.lifespan, use_case_mcp_app.lifespan)
 
 app = FastAPI(debug=True, lifespan=combined_lifespan)
 
@@ -208,9 +235,12 @@ app.mount('/voyager',
             enable_pydantic_resolve_meta=True))
 
 
-# Mount MCP server (Streamable HTTP)
-# MCP endpoint: http://localhost:8000/mcp/
+# Mount MCP servers (Streamable HTTP)
+# GraphQL MCP endpoint: http://localhost:8000/mcp/
 app.mount('/mcp', mcp_app)
+
+# UseCase MCP endpoint: http://localhost:8000/use-case-mcp/
+app.mount('/use-case-mcp', use_case_mcp_app)
 
 
 def use_route_names_as_operation_ids(app: FastAPI) -> None:
