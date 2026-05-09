@@ -7,7 +7,7 @@ import src.services.task.schema as ts
 import src.services.user.schema as us
 import src.services.sprint.schema as sps
 import src.services.team.schema as tms
-from src.services.er_diagram import AutoLoad
+from pydantic_resolve import AutoLoad
 
 class Sample3TaskDetail(ts.Task):
     user: Annotated[Optional[us.User], AutoLoad(origin='owner')] = None
@@ -25,7 +25,7 @@ class Sample3StoryDetail(DefineSubset):
         fields="all",
         expose_as=[('name', 'story_name')]
     )
-    tasks: Annotated[list[Sample3TaskDetail], AutoLoad()] = []
+    tasks: list[Sample3TaskDetail] = []
 
 class Sample3SprintDetail(DefineSubset):
     __subset__ = SubsetConfig(
@@ -34,7 +34,7 @@ class Sample3SprintDetail(DefineSubset):
         expose_as=[('name', 'sprint_name')]
     )
 
-    stories: Annotated[list[Sample3StoryDetail], AutoLoad()] = []
+    stories: list[Sample3StoryDetail] = []
 
 @serialization
 class Sample3TeamDetail(DefineSubset):
@@ -44,4 +44,4 @@ class Sample3TeamDetail(DefineSubset):
         expose_as=[('name', 'team_name')]
     )
 
-    sprints: Annotated[list[Sample3SprintDetail], AutoLoad()] = []
+    sprints: list[Sample3SprintDetail] = []

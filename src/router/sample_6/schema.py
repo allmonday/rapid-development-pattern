@@ -8,7 +8,7 @@ import src.services.task.schema as ts
 import src.services.user.schema as us
 import src.services.sprint.schema as sps
 import src.services.team.schema as tms
-from src.services.er_diagram import AutoLoad
+from pydantic_resolve import AutoLoad
 
 import src.services.team.query as tmq
 
@@ -34,7 +34,7 @@ class Sample6StoryDetail(DefineSubset):
     def post_name(self):
         return 'story name: ' + self.name
 
-    tasks: Annotated[list[Sample6TaskDetail], AutoLoad()] = []
+    tasks: list[Sample6TaskDetail] = []
 
 class Sample6SprintDetail(DefineSubset):
     __subset__ = SubsetConfig(
@@ -45,7 +45,7 @@ class Sample6SprintDetail(DefineSubset):
     def post_name(self):
         return 'sprint name: ' + self.name
 
-    stories: Annotated[list[Sample6StoryDetail], AutoLoad()] = []
+    stories: list[Sample6StoryDetail] = []
 
 class Sample6TeamDetail(DefineSubset):
     __subset__ = SubsetConfig(
@@ -56,7 +56,7 @@ class Sample6TeamDetail(DefineSubset):
     def post_name(self):
         return 'team name: ' + self.name
 
-    sprints: Annotated[list[Sample6SprintDetail], AutoLoad()] = []
+    sprints: list[Sample6SprintDetail] = []
 
 @serialization
 class Sample6Root(BaseModel):

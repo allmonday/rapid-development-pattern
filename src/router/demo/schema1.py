@@ -1,6 +1,6 @@
 from typing import Optional, Annotated
 from pydantic_resolve import Collector, DefineSubset, SendTo, serialization
-from src.services.er_diagram import AutoLoad
+from pydantic_resolve import AutoLoad
 from src.services.story.schema import Story as BaseStory
 from src.services.task.schema import Task as BaseTask
 from src.services.user.schema import User as BaseUser
@@ -17,7 +17,7 @@ class Task1(BaseTask):
 class Story1(DefineSubset):
     __subset__ = (BaseStory, ('id', 'name', 'owner_id'))
 
-    tasks: Annotated[list[Task1], AutoLoad()] = []
+    tasks: list[Task1] = []
     assignee: Annotated[Optional[BaseUser], AutoLoad(origin='owner')] = None
 
     related_users: list[BaseUser] = []

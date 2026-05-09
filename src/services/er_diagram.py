@@ -2,7 +2,6 @@ from pydantic_resolve import base_entity
 
 BaseEntity = base_entity()
 diagram = None
-AutoLoad = None
 
 
 def _create_page_many_to_many_loader(
@@ -155,7 +154,7 @@ def _create_page_many_to_many_loader(
 
 def initialize():
     """在所有 entity schema 注册后调用，构建 diagram 并合并 ORM 关系。"""
-    global diagram, AutoLoad
+    global diagram
 
     from sqlalchemy import inspect as sa_inspect
     from pydantic_resolve.integration.sqlalchemy import build_relationship
@@ -251,5 +250,3 @@ def initialize():
                 session_factory=db.async_session,
             )
             rel.sort_field = sort_field
-
-    AutoLoad = diagram.create_auto_load()

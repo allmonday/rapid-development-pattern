@@ -1,7 +1,7 @@
 from typing import Optional, Annotated
 from pydantic_resolve import serialization
 from pydantic_resolve.utils.dataloader import generate_list_empty_loader, generate_single_empty_loader
-from src.services.er_diagram import AutoLoad
+from pydantic_resolve import AutoLoad
 
 
 import src.services.story.schema as ss
@@ -15,11 +15,11 @@ TeamToSprintLoader = generate_list_empty_loader('TeamToSprintLoader')
 UserLoader = generate_single_empty_loader('UserLoader')
 
 class Sample7SprintDetail(sps.Sprint):
-    stories: Annotated[list[ss.Story], AutoLoad()] = []
+    stories: list[ss.Story] = []
 
 @serialization
 class Sample7TeamDetail(tms.Team):
-    sprints: Annotated[list[Sample7SprintDetail], AutoLoad()] = []
+    sprints: list[Sample7SprintDetail] = []
 
 @serialization
 class Sample7TaskDetail(ts.Task):

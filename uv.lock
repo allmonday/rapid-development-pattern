@@ -249,7 +249,7 @@ requires-dist = [
     { name = "jinja2", marker = "extra == 'benchmark'", specifier = ">=3.0.0" },
     { name = "matplotlib", marker = "extra == 'benchmark'", specifier = ">=3.8.0" },
     { name = "pydantic", specifier = "==2.11.7" },
-    { name = "pydantic-resolve", extras = ["mcp"], specifier = "==5.3.1" },
+    { name = "pydantic-resolve", extras = ["mcp"], specifier = "==5.6.0" },
     { name = "sqlalchemy", specifier = "==2.0.43" },
     { name = "strawberry-graphql", extras = ["fastapi"], marker = "extra == 'benchmark'", specifier = ">=0.287.0" },
     { name = "uvicorn", specifier = "==0.35.0" },
@@ -1383,16 +1383,16 @@ wheels = [
 
 [[package]]
 name = "pydantic-resolve"
-version = "5.3.1"
+version = "5.6.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiodataloader" },
     { name = "graphql-core" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b9/8b/93ba43207d3cd56e54af0578325ced3e55de1c377434253ea413979ea4ef/pydantic_resolve-5.3.1.tar.gz", hash = "sha256:3eb22a052daec13104ade9c552b56e13e900869a1ad6d49c37cc52357627647e", size = 1505361, upload-time = "2026-04-22T10:58:57.016Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/df/45/c5444fcdf37267441814f2374ce313fed25b0371ec6d55fe1aacbbc73edd/pydantic_resolve-5.6.0.tar.gz", hash = "sha256:47f022ebdad773d4be02ccbc25856e3db03fc1121b61b470b6adfb90e0158a68", size = 1541552, upload-time = "2026-05-09T07:52:06.959Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/83/717a116718863f1350a4559a96c4dcb7329283a366e60f3a4a69dcc332ee/pydantic_resolve-5.3.1-py3-none-any.whl", hash = "sha256:6f6fb16e78ccf5736ffcb65a59283735a647b06df14e3ed707c00df1045d3ef9", size = 137661, upload-time = "2026-04-22T10:58:58.722Z" },
+    { url = "https://files.pythonhosted.org/packages/92/b5/4941880b31dff233faf43649bc6d914489eecff190597efd621bdff31717/pydantic_resolve-5.6.0-py3-none-any.whl", hash = "sha256:27390dc38dd194997a49312abd74245c4b388ab7a90bc3329399e435d7825a0e", size = 151938, upload-time = "2026-05-09T07:52:08.485Z" },
 ]
 
 [package.optional-dependencies]

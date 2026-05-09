@@ -1,5 +1,5 @@
 from typing import Optional, Annotated
-from src.services.er_diagram import AutoLoad
+from pydantic_resolve import AutoLoad
 from src.services.story.schema import Story as BaseStory
 from src.services.task.schema import Task as BaseTask
 from src.services.user.schema import User as BaseUser
@@ -10,5 +10,5 @@ class Task0(BaseTask):
 
 @serialization
 class Story0(BaseStory):
-    tasks: Annotated[list[Task0], AutoLoad()] = []
+    tasks: list[Task0] = []
     assignee: Annotated[Optional[BaseUser], AutoLoad(origin='owner')] = None

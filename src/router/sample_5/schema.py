@@ -1,6 +1,6 @@
 from typing import Optional, Annotated
 from pydantic_resolve import Loader, serialization
-from src.services.er_diagram import AutoLoad
+from pydantic_resolve import AutoLoad
 from pydantic import BaseModel
 import src.db as db
 
@@ -16,21 +16,21 @@ class Sample5TaskDetail(ts.Task):
     user: Annotated[Optional[us.User], AutoLoad(origin='owner')] = None
 
 class Sample5StoryDetail(ss.Story):
-    tasks: Annotated[list[Sample5TaskDetail], AutoLoad()] = []
+    tasks: list[Sample5TaskDetail] = []
 
     task_count: int = 0
     def post_task_count(self):
         return len(self.tasks)
 
 class Sample5SprintDetail(sps.Sprint):
-    stories: Annotated[list[Sample5StoryDetail], AutoLoad()] = []
+    stories: list[Sample5StoryDetail] = []
 
     task_count: int = 0
     def post_task_count(self):
         return sum([s.task_count for s in self.stories])
 
 class Sample5TeamDetail(tms.Team):
-    sprints: Annotated[list[Sample5SprintDetail], AutoLoad()] = []
+    sprints: list[Sample5SprintDetail] = []
 
     task_count: int = 0
     def post_task_count(self):

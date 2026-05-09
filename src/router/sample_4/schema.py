@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional, Annotated
 from pydantic_resolve import ICollector, serialization
-from src.services.er_diagram import AutoLoad
+from pydantic_resolve import AutoLoad
 import src.services.story.schema as ss
 import src.services.task.schema as ts
 import src.services.user.schema as us
@@ -22,7 +22,7 @@ class CntCollector(ICollector):
 
 @serialization
 class Sample4TeamDetail(tms.Team):
-    sprints: Annotated[list[Sample4SprintDetail], AutoLoad()] = []
+    sprints: list[Sample4SprintDetail] = []
 
     task_count: int = 0
     def post_task_count(self):
@@ -37,7 +37,7 @@ class Sample4TeamDetail(tms.Team):
         self.description = f'team: "{self.name}" has {self.task_count} tasks in total.'
 
 class Sample4SprintDetail(sps.Sprint):
-    stories: Annotated[list[Sample4StoryDetail], AutoLoad()] = []
+    stories: list[Sample4StoryDetail] = []
 
     task_count: int = 0
     # task_count: int = Field(default=0, exclude=True)
@@ -47,7 +47,7 @@ class Sample4SprintDetail(sps.Sprint):
 class Sample4StoryDetail(ss.Story):
     __pydantic_resolve_collect__ = {'tasks': 'story_tasks'}
 
-    tasks: Annotated[list[Sample4TaskDetail], AutoLoad()] = []
+    tasks: list[Sample4TaskDetail] = []
 
     task_count: int = 0
     # task_count: int = Field(default=0, exclude=True)
