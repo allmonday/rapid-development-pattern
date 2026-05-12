@@ -11,7 +11,7 @@ dependencies = [
     "SQLAlchemy==2.0.43",
     "uvicorn==0.35.0",
     "greenlet==3.2.4",
-    "fastapi-voyager==0.24.0",
+    "fastapi-voyager==0.25.0",
     "pydantic-resolve[mcp]==5.6.0",
 ]
 

@@ -244,7 +244,7 @@ requires-dist = [
     { name = "aiosqlite", specifier = "==0.21.0" },
     { name = "click", specifier = "==8.1.7" },
     { name = "fastapi", specifier = "==0.116.1" },
-    { name = "fastapi-voyager", specifier = "==0.24.0" },
+    { name = "fastapi-voyager", specifier = "==0.25.0" },
     { name = "greenlet", specifier = "==3.2.4" },
     { name = "jinja2", marker = "extra == 'benchmark'", specifier = ">=3.0.0" },
     { name = "matplotlib", marker = "extra == 'benchmark'", specifier = ">=3.8.0" },
@@ -485,15 +485,15 @@ wheels = [
 
 [[package]]
 name = "fastapi-voyager"
-version = "0.24.0"
+version = "0.25.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jinja2" },
     { name = "pydantic-resolve" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/cc/08/f65c957afea244acd8db59d5401de14ac90c985f9321fc5ff904c28c0a3f/fastapi_voyager-0.24.0.tar.gz", hash = "sha256:f286d9bc1fd066fdd59834ff08cfbb850ee879398694efdd52883f18463122b2", size = 703797, upload-time = "2026-04-17T11:51:16.27Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/89/37/59d037c336dd94834e082c019e5c312a2234703d01647630631fd2e3bdf3/fastapi_voyager-0.25.0.tar.gz", hash = "sha256:0324f5ca66726a689bcf02d3254651f418c487b424ca62960034cfb99e0d8dd0", size = 698198, upload-time = "2026-05-12T07:14:50.156Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/21/9e/f3b0b833ee356316b2e8330bb08e751ee5beae42be7eac2ec06e6ea54100/fastapi_voyager-0.24.0-py3-none-any.whl", hash = "sha256:ee3d6a71f285df9379413bae7620cfce3cde82f9f67dcc5ebaf0a4dd37c327c4", size = 579940, upload-time = "2026-04-17T11:51:14.619Z" },
+    { url = "https://files.pythonhosted.org/packages/af/ee/a2151fe25e591b0407ddbb739a0fcc1993b50da52ab5f2fca2c5169768da/fastapi_voyager-0.25.0-py3-none-any.whl", hash = "sha256:55e1e0a84e612588443dcda8f0463819e6c5cca63db16ecb95c552b4a056fbc9", size = 577412, upload-time = "2026-05-12T07:14:47.188Z" },
 ]
 
 [[package]]
