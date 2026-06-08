@@ -79,8 +79,6 @@ class MetricsCollector:
     ) -> MetricResult:
         """Execute a single measurement."""
 
-        # Start memory tracking
-        tracemalloc.start()
         start_time = time.perf_counter()
 
         try:
@@ -96,18 +94,12 @@ class MetricsCollector:
 
         end_time = time.perf_counter()
 
-        # Get memory peak
-        current, peak = tracemalloc.get_traced_memory()
-        tracemalloc.stop()
-
         metric = MetricResult(
             name=name,
             implementation=implementation,
             query_name=query_name,
             total_time_ms=(end_time - start_time) * 1000,
             resolve_time_ms=(end_time - start_time) * 1000,
-            memory_peak_bytes=peak,
-            memory_delta_bytes=current,
             response_size_bytes=response_size,
             success=success,
             error=error,
@@ -179,22 +171,19 @@ def format_comparison(pr_result: BenchmarkResult, sw_result: BenchmarkResult) ->
         f"\n{'='*70}",
         f"Query: {pr_result.query_name}",
         f"{'='*70}",
-        f"{'Metric':<30} {'pydantic-resolve':<20} {'Strawberry':<20}",
+        f"{'Metric':<25} {'PR':<20} {'Strawberry':<20}",
         f"{'-'*70}",
-        f"{'Mean Time (ms)':<30} {pr_result.mean_time_ms:<20.2f} {sw_result.mean_time_ms:<20.2f}",
-        f"{'Median Time (ms)':<30} {pr_result.median_time_ms:<20.2f} {sw_result.median_time_ms:<20.2f}",
-        f"{'P95 Time (ms)':<30} {pr_result.p95_time_ms:<20.2f} {sw_result.p95_time_ms:<20.2f}",
-        f"{'P99 Time (ms)':<30} {pr_result.p99_time_ms:<20.2f} {sw_result.p99_time_ms:<20.2f}",
-        f"{'Mean Memory (MB)':<30} {pr_result.mean_memory_mb:<20.2f} {sw_result.mean_memory_mb:<20.2f}",
-        f"{'Peak Memory (MB)':<30} {pr_result.peak_memory_mb:<20.2f} {sw_result.peak_memory_mb:<20.2f}",
+        f"{'Mean (ms)':<25} {pr_result.mean_time_ms:<20.2f} {sw_result.mean_time_ms:<20.2f}",
+        f"{'Median (ms)':<25} {pr_result.median_time_ms:<20.2f} {sw_result.median_time_ms:<20.2f}",
+        f"{'P95 (ms)':<25} {pr_result.p95_time_ms:<20.2f} {sw_result.p95_time_ms:<20.2f}",
+        f"{'P99 (ms)':<25} {pr_result.p99_time_ms:<20.2f} {sw_result.p99_time_ms:<20.2f}",
     ]
 
-    # Add performance ratio
     if sw_result.mean_time_ms > 0:
         ratio = pr_result.mean_time_ms / sw_result.mean_time_ms
         if ratio < 1:
-            lines.append(f"{'Performance Ratio':<30} pydantic-resolve is {1/ratio:.2f}x faster")
+            lines.append(f"{'Ratio':<25} PR is {1/ratio:.2f}x faster")
         else:
-            lines.append(f"{'Performance Ratio':<30} Strawberry is {ratio:.2f}x faster")
+            lines.append(f"{'Ratio':<25} Strawberry is {ratio:.2f}x faster")
 
     return "\n".join(lines)

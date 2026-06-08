@@ -1,114 +1,98 @@
 """GraphQL query definitions for benchmark tests."""
 
-QUERIES = {
-    # Simple queries: single table
+# Strawberry uses snake_case root fields (explicitly named via @strawberry.field(name='get_xxx'))
+SW_QUERIES = {
     "simple_users": """
         query {
-            get_users {
-                id
-                name
-                level
-            }
+            get_users { id name level }
         }
     """,
 
     "simple_teams": """
         query {
-            get_teams {
-                id
-                name
-            }
+            get_teams { id name }
         }
     """,
 
     "simple_sprints": """
         query {
-            get_sprints {
-                id
-                name
-                status
-            }
+            get_sprints { id name status }
         }
     """,
 
-    # 1:1 relationship: Task -> Owner
     "one_to_one_task_owner": """
         query {
-            get_tasks {
-                id
-                name
-                owner {
-                    id
-                    name
-                }
-            }
+            get_tasks { id name owner { id name } }
         }
     """,
 
-    # 1:N relationship: Team -> Sprints
     "one_to_many_team_sprints": """
         query {
-            get_teams {
-                id
-                name
-                sprints {
-                    id
-                    name
-                    status
-                }
-            }
+            get_teams { id name sprints { id name status } }
         }
     """,
 
-    # 1:N relationship: Team -> Users
     "one_to_many_team_users": """
         query {
-            get_teams {
-                id
-                name
-                users {
-                    id
-                    name
-                    level
-                }
-            }
+            get_teams { id name users { id name level } }
         }
     """,
 
-    # 2-layer nested: Team -> Sprints -> Stories
     "nested_2_layers": """
         query {
-            get_teams {
-                id
-                name
-                sprints {
-                    id
-                    name
-                    stories {
-                        id
-                        name
-                    }
-                }
-            }
+            get_teams { id name sprints { id name stories { id name } } }
         }
     """,
 
-    # 3-layer nested: Team -> Sprints -> Stories -> Tasks
     "nested_3_layers": """
         query {
             get_teams {
-                id
-                name
+                id name
+                sprints { id name stories { id name tasks { id name estimate } } }
+            }
+        }
+    """,
+
+    "nested_4_layers_with_owners": """
+        query {
+            get_teams {
+                id name
                 sprints {
-                    id
-                    name
+                    id name
                     stories {
-                        id
-                        name
+                        id name owner { id name }
+                        tasks { id name estimate owner { id name } }
+                    }
+                }
+            }
+        }
+    """,
+
+    "sprint_with_stories_and_tasks": """
+        query {
+            get_sprints {
+                id name status
+                stories {
+                    id name owner { id name }
+                    tasks { id name estimate }
+                }
+            }
+        }
+    """,
+
+    # 5-layer: every level resolves a related entity
+    "nested_5_layers_full": """
+        query {
+            get_teams {
+                id name
+                sprints {
+                    id name status
+                    stories {
+                        id name
+                        owner { id name level }
                         tasks {
-                            id
-                            name
-                            estimate
+                            id name estimate
+                            owner { id name level }
                         }
                     }
                 }
@@ -116,29 +100,99 @@ QUERIES = {
         }
     """,
 
-    # 4-layer deep nested (most complex)
-    "nested_4_layers_with_owners": """
+    # Wide: team with both sprints and users fully expanded
+    "wide_team_all_relations": """
         query {
             get_teams {
-                id
-                name
+                id name
                 sprints {
-                    id
-                    name
+                    id name status
                     stories {
-                        id
-                        name
-                        owner {
-                            id
-                            name
-                        }
+                        id name
+                        owner { id name level }
                         tasks {
-                            id
-                            name
-                            estimate
-                            owner {
-                                id
-                                name
+                            id name estimate
+                            owner { id name level }
+                        }
+                    }
+                }
+                users {
+                    id name level
+                }
+            }
+        }
+    """,
+}
+
+# pydantic-resolve uses camelCase query names + pagination wrapper (items)
+PR_QUERIES = {
+    "simple_users": """
+        query {
+            userGetUsers { id name level }
+        }
+    """,
+
+    "simple_teams": """
+        query {
+            teamGetTeams { id name }
+        }
+    """,
+
+    "simple_sprints": """
+        query {
+            sprintGetSprints { id name status }
+        }
+    """,
+
+    "one_to_one_task_owner": """
+        query {
+            taskGetTasks { id name owner { id name level } }
+        }
+    """,
+
+    "one_to_many_team_sprints": """
+        query {
+            teamGetTeams { id name sprints { items { id name status } } }
+        }
+    """,
+
+    "one_to_many_team_users": """
+        query {
+            teamGetTeams { id name users { items { id name level } } }
+        }
+    """,
+
+    "nested_2_layers": """
+        query {
+            teamGetTeams {
+                id name
+                sprints { items { id name stories { items { id name } } } }
+            }
+        }
+    """,
+
+    "nested_3_layers": """
+        query {
+            teamGetTeams {
+                id name
+                sprints {
+                    items { id name stories { items { id name tasks { items { id name estimate } } } } }
+                }
+            }
+        }
+    """,
+
+    "nested_4_layers_with_owners": """
+        query {
+            teamGetTeams {
+                id name
+                sprints {
+                    items {
+                        id name
+                        stories {
+                            items {
+                                id name owner { id name level }
+                                tasks { items { id name estimate owner { id name level } } }
                             }
                         }
                     }
@@ -147,26 +201,57 @@ QUERIES = {
         }
     """,
 
-    # Sprint-centric query
     "sprint_with_stories_and_tasks": """
         query {
-            get_sprints {
-                id
-                name
-                status
+            sprintGetSprints {
+                id name status
                 stories {
-                    id
-                    name
-                    owner {
-                        id
-                        name
-                    }
-                    tasks {
-                        id
-                        name
-                        estimate
+                    items {
+                        id name owner { id name level }
+                        tasks { items { id name estimate } }
                     }
                 }
+            }
+        }
+    """,
+
+    "nested_5_layers_full": """
+        query {
+            teamGetTeams {
+                id name
+                sprints {
+                    items {
+                        id name status
+                        stories {
+                            items {
+                                id name
+                                owner { id name level }
+                                tasks { items { id name estimate owner { id name level } } }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    """,
+
+    "wide_team_all_relations": """
+        query {
+            teamGetTeams {
+                id name
+                sprints {
+                    items {
+                        id name status
+                        stories {
+                            items {
+                                id name
+                                owner { id name level }
+                                tasks { items { id name estimate owner { id name level } } }
+                            }
+                        }
+                    }
+                }
+                users { items { id name level } }
             }
         }
     """,
@@ -184,8 +269,10 @@ TEST_SCENARIOS = [
     "nested_3_layers",
     "nested_4_layers_with_owners",
     "sprint_with_stories_and_tasks",
+    "nested_5_layers_full",
+    "wide_team_all_relations",
 ]
 
 # Concurrent test configuration
 CONCURRENCY_LEVELS = [10, 50, 100]
-CONCURRENT_ITERATIONS = 20  # Number of batches for concurrent tests
+CONCURRENT_ITERATIONS = 20

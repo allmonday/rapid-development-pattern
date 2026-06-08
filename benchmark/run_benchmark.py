@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from benchmark.metrics.collector import MetricsCollector, BenchmarkResult, format_comparison
 from benchmark.metrics.report import ReportGenerator
-from benchmark.tests.test_queries import QUERIES, TEST_SCENARIOS, CONCURRENCY_LEVELS, CONCURRENT_ITERATIONS
+from benchmark.tests.test_queries import PR_QUERIES, SW_QUERIES, TEST_SCENARIOS, CONCURRENCY_LEVELS, CONCURRENT_ITERATIONS
 
 
 async def execute_pydantic_resolve(query: str) -> dict:
@@ -41,14 +41,15 @@ async def execute_strawberry(query: str) -> dict:
     return result
 
 
-async def run_benchmark(quick: bool = False, output_dir: str = "benchmark/results"):
+async def run_benchmark(quick: bool = False, output_dir: str = "benchmark/results", large: bool = False):
     """Run complete benchmark suite."""
     iterations = 10 if quick else 50
     collector = MetricsCollector()
     all_results: List[BenchmarkResult] = []
 
     print("=" * 70)
-    print("pydantic-resolve vs Strawberry GraphQL Benchmark")
+    dataset_label = "LARGE" if large else "SMALL"
+    print(f"pydantic-resolve vs Strawberry GraphQL Benchmark ({dataset_label})")
     print("=" * 70)
     print(f"Started at: {datetime.now()}")
     print(f"Iterations per test: {iterations}")
@@ -58,21 +59,24 @@ async def run_benchmark(quick: bool = False, output_dir: str = "benchmark/result
     print("Initializing database...")
     import src.db as db
     await db.init()
-    await db.prepare()
-    print("Database initialized.\n")
+    if large:
+        await db.prepare_large()
+        print("Database initialized (large dataset).\n")
+    else:
+        await db.prepare()
+        print("Database initialized.\n")
 
-    # Warmup: Execute each scenario once to prime caches
+    # Warmup
     print("Warming up (priming caches)...")
     for scenario in TEST_SCENARIOS:
-        query = QUERIES[scenario]
+        pr_query = PR_QUERIES[scenario]
+        sw_query = SW_QUERIES[scenario]
         try:
-            # Warmup pydantic-resolve
-            await execute_pydantic_resolve(query)
+            await execute_pydantic_resolve(pr_query)
         except Exception as e:
             print(f"  Warning: pydantic-resolve warmup failed for {scenario}: {e}")
         try:
-            # Warmup Strawberry
-            await execute_strawberry(query)
+            await execute_strawberry(sw_query)
         except Exception as e:
             print(f"  Warning: Strawberry warmup failed for {scenario}: {e}")
     print("Warmup complete.\n")
@@ -81,7 +85,8 @@ async def run_benchmark(quick: bool = False, output_dir: str = "benchmark/result
     print("Running standard test scenarios...")
     for scenario in TEST_SCENARIOS:
         print(f"\n  Testing: {scenario}")
-        query = QUERIES[scenario]
+        pr_query = PR_QUERIES[scenario]
+        sw_query = SW_QUERIES[scenario]
 
         # pydantic-resolve tests
         pr_results = []
@@ -91,7 +96,7 @@ async def run_benchmark(quick: bool = False, output_dir: str = "benchmark/result
                 implementation="pydantic-resolve",
                 query_name=scenario,
                 query_func=execute_pydantic_resolve,
-                query=query,
+                query=pr_query,
             )
             pr_results.append(result)
             if (i + 1) % 10 == 0:
@@ -105,7 +110,7 @@ async def run_benchmark(quick: bool = False, output_dir: str = "benchmark/result
                 implementation="strawberry",
                 query_name=scenario,
                 query_func=execute_strawberry,
-                query=query,
+                query=sw_query,
             )
             sw_results.append(result)
             if (i + 1) % 10 == 0:
@@ -125,7 +130,8 @@ async def run_benchmark(quick: bool = False, output_dir: str = "benchmark/result
     print("Running concurrent tests...")
     print("=" * 70)
 
-    query = QUERIES["nested_4_layers_with_owners"]
+    pr_query = PR_QUERIES["nested_4_layers_with_owners"]
+    sw_query = SW_QUERIES["nested_4_layers_with_owners"]
     batches = 5 if quick else CONCURRENT_ITERATIONS
 
     for concurrency in CONCURRENCY_LEVELS:
@@ -140,7 +146,7 @@ async def run_benchmark(quick: bool = False, output_dir: str = "benchmark/result
                     implementation="pydantic-resolve",
                     query_name=f"concurrent_{concurrency}",
                     query_func=execute_pydantic_resolve,
-                    query=query,
+                    query=pr_query,
                 )
                 for i in range(concurrency)
             ]
@@ -158,7 +164,7 @@ async def run_benchmark(quick: bool = False, output_dir: str = "benchmark/result
                     implementation="strawberry",
                     query_name=f"concurrent_{concurrency}",
                     query_func=execute_strawberry,
-                    query=query,
+                    query=sw_query,
                 )
                 for i in range(concurrency)
             ]
@@ -175,18 +181,12 @@ async def run_benchmark(quick: bool = False, output_dir: str = "benchmark/result
         all_results.append(sw_benchmark)
 
         # Calculate and print throughput
-        pr_throughput = concurrency / (pr_benchmark.mean_time_ms / 1000) if pr_benchmark.mean_time_ms > 0 else 0
-        sw_throughput = concurrency / (sw_benchmark.mean_time_ms / 1000) if sw_benchmark.mean_time_ms > 0 else 0
+        pr_t = concurrency / (pr_benchmark.mean_time_ms / 1000) if pr_benchmark.mean_time_ms > 0 else 0
+        sw_t = concurrency / (sw_benchmark.mean_time_ms / 1000) if sw_benchmark.mean_time_ms > 0 else 0
 
         print(f"\n  Results for {concurrency} concurrent requests:")
-        print(f"    pydantic-resolve throughput: {pr_throughput:.1f} req/s (mean: {pr_benchmark.mean_time_ms:.2f}ms)")
-        print(f"    Strawberry throughput: {sw_throughput:.1f} req/s (mean: {sw_benchmark.mean_time_ms:.2f}ms)")
-        if sw_throughput > 0:
-            ratio = pr_throughput / sw_throughput
-            if ratio > 1:
-                print(f"    pydantic-resolve is {ratio:.2f}x faster")
-            else:
-                print(f"    Strawberry is {1/ratio:.2f}x faster")
+        print(f"    pydantic-resolve: {pr_t:.1f} req/s (mean: {pr_benchmark.mean_time_ms:.2f}ms)")
+        print(f"    Strawberry:       {sw_t:.1f} req/s (mean: {sw_benchmark.mean_time_ms:.2f}ms)")
 
     # Generate report
     print("\n" + "=" * 70)
@@ -219,13 +219,18 @@ def main():
         help="Run quick test (10 iterations instead of 50)"
     )
     parser.add_argument(
+        "--large",
+        action="store_true",
+        help="Use large dataset (50 teams, 200 users, 450 stories, 1350 tasks)"
+    )
+    parser.add_argument(
         "--output-dir",
         default="benchmark/results",
         help="Output directory for results (default: benchmark/results)"
     )
     args = parser.parse_args()
 
-    asyncio.run(run_benchmark(quick=args.quick, output_dir=args.output_dir))
+    asyncio.run(run_benchmark(quick=args.quick, output_dir=args.output_dir, large=args.large))
 
 
 if __name__ == "__main__":
